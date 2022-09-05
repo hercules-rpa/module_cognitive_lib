@@ -1,0 +1,10 @@
+pandas
+matplotlib
+pdf2image
+numpy==1.22
+imutils
+PyPDF2
+RPA
+camelot-py[cv]
+playwright
+bs4

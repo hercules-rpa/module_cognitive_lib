@@ -1,0 +1,822 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="X-Frame-Options" content="deny">
+<meta http-equiv="X-content-type-options" content="nosniff">
+
+    
+        <meta name="title" content="Sistema Nacional de Publicidad de Subvenciones - Portal de Transparencia">
+		<meta name="Keywords" content="ESTADO, AYUDAS, SUBVENCIONES, BENEFICIARIOS, TRANSPARENCIA, LEY 13/2013, BASE DE DATOS NACIONAL DE SUBVENCIONES, ADMINISTRACION DEL ESTADO, SECTOR PUBLICO ESTATAL, AYUDAS DE ESTADO">
+		<meta name="description" content="Contiene información sobre las subvenciones y ayudas públicas concedidas por el Sector Público Estatal a partir del 01/01/2014 y por las administraciones públicas autonómicas y locales a partir de 01/01/2016, con indicación de su importe, objeto o finalidad y beneficiarios">
+		<meta http-equiv="Content-Language" content="es">
+		<meta name="author" content="IGAE">
+		
+		  <!-- Código generado por FRACC HtmlHead --> 
+    <meta http-equiv="X-UA-Compatible" content="IE=9">
+    <!-- Establecido en la cabecera de la respuesta HTTP lo siguiente -> X-Content-Type-Options: nosniff -->
+    <!-- Establecido en la cabecera de la respuesta HTTP lo siguiente -> X-XSS-Protection: 1; mode=block -->
+    <!-- Establecido en la cabecera de la respuesta HTTP lo siguiente -> X-Frame-Options: sameorigin -->
+    <meta http-equiv="content-type" content="text/html; charset=windows-1252">
+    <!-- Establecido en la cabecera de la respuesta HTTP lo siguiente -> Cache-Control: no-cache -->
+    <link rel="stylesheet" type="text/css" href="525644_files/fracc.css">
+    <link rel="stylesheet" type="text/css" href="525644_files/fracc-forms.css">
+    <link rel="stylesheet" type="text/css" href="525644_files/app.css">
+    <link rel="stylesheet" type="text/css" href="525644_files/jquery-ui-1.9.2.custom.css">    <script async="" src="525644_files/analytics.js"></script><script type="text/javascript" src="525644_files/jquery-1.8.3.js"></script>    <script type="text/javascript" src="525644_files/jquery.ui.datepicker-es.js"></script>    <script type="text/javascript" src="525644_files/jquery-ui-1.9.2.custom.js"></script>    <link rel="stylesheet" type="text/css" href="525644_files/ui.jqgrid.css">    <script type="text/javascript" src="525644_files/jquery.jqGrid.min.js"></script>    <script type="text/javascript" src="525644_files/grid.locale-es.js"></script>    <script type="text/javascript" src="525644_files/jquery-fracc"></script>
+    <!-- Fin del código generado por FRACC HtmlHead --> 
+
+		
+		<script type="text/javascript" src="525644_files/funGenerales.js"></script>
+    	<script type="text/javascript" src="525644_files/funVentana.js"></script>
+    	<script type="text/javascript" src="525644_files/bdnstrans.js"></script>
+    	<script type="text/javascript" src="525644_files/informes.js"></script>
+    	<script type="text/javascript" src="525644_files/funNumericasSimple.js"></script>
+    	<script type="text/javascript" src="525644_files/CFormulario.js"></script>
+    	<script type="text/javascript" src="525644_files/funFechas.js"></script>
+    			
+		<link rel="stylesheet" type="text/css" href="525644_files/jquery-ui-1.8.16.custom.css">
+   		    
+    	<title>Base de Datos Nacional de Subvenciones</title>
+    	
+    	<script>
+    	
+	    	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	  		  ga('create', 'UA-56677930-1', 'auto');
+	  		  ga('send', 'pageview');
+    	
+    		$(document).ready(function() {
+    			setupRejilla();
+    		});
+    		
+    		function cargarVentanaModal(){    			
+    			mostrarVentanaModal("Aviso", "Cargando... Por favor espere", false, null);	        	        
+		    }
+    		
+    		function enviar(id){   
+    			    			
+    			 var id = id;     			
+    			 var vurl = getAppRaiz() + '/GE/es/convocatoria/727204/document/' + id;
+    		       		         		     
+     			 cargarVentanaModal() 
+     			 document.getElementById(id).href = vurl;
+     			 setTimeout("destroyVentanaModal()",500);      			 
+		    }
+    		
+    		function setupRejilla() {
+    			cargarVentanaModal();
+    			
+    	    	$('#grid').jqGrid({
+    				url: getAppRaiz() + '/busqueda',
+    				datatype: "json",
+    				postData: {'type':'getdocsconv', 'numcov':'525644'},
+    				height: 140,
+    				loadBeforeSend: cargarVentanaModal,
+    				gridComplete:function(){setTimeout("destroyVentanaModal()",50);},
+    				loadui: 'disable',
+    				colModel:[
+    					{name: 'ID', hidden: true, index:'0'},
+    					{name:'fechaReg', label: "Fecha de registro", index: '1', align:'center', width:125, formatter:dateFormatter},
+    					{name:'fechapublicacion', label: "Fecha de publicación", index: '2', align:'center', width:125, formatter:dateFormatter},
+    					{name:'documentos', label: "Documentos", index: '3', formatter:documentFormatter, width:730},
+    				], 	
+    				rowNum:50,
+    				rowList:[50,100,200],
+    				viewrecords: true,
+    				pager: '#pager',
+    				loadComplete: function() {
+    					$('.ui-jqgrid-sortable').css('background','#1160a7');
+    					$('.ui-jqgrid-sortable').css('color','#ffffff');
+    					$('tr.jqgrow:odd').css('background', '#ececec');
+    					$('tr.jqgrow:even').css('background', '#ffffff');
+    					$('.ui-jqgrid tr.jqgrow td').css('white-space', 'normal');
+    					
+    					for (var i=0; i < $("tr.ui-jqgrid-labels th").length; i++) {
+    						jQuery("tr.ui-jqgrid-labels th:eq(" + i + ")").attr("title", function (){return jQuery("tr.ui-jqgrid-labels th:eq(" + i + ")").text();});
+    						
+    						//Accesibilidad
+    					    jQuery("tr.ui-jqgrid-labels th:eq(" + i + ")").attr("tabindex", "0");
+    					}
+    				}
+    			});
+    	    	
+    	     		      
+    	    	$('#grid2').jqGrid({
+    	    		url: getAppRaiz() + '/busqueda',
+    				datatype: "json",
+    				postData: {'type':'getanunconv', 'numcov':'525644'},
+    				height: 140,
+    				loadBeforeSend: cargarVentanaModal,
+    				gridComplete:function(){setTimeout("destroyVentanaModal()",50);},
+    				loadui: 'disable',
+    				colModel:[
+						{name: 'ID', hidden: true, index:'0'},
+						{name: 'diariooficial', label:"Diario oficial", index:'1', width: 250},
+						{name:'fechapublicacion', label:"Fecha de publicación", index:'2', formatter:'date', width:110, align:'center'},
+						{name:'titulo', label:"Título del anuncio", index:'3', width:250},						
+						{name: 'texto', hidden: true, index:'4'},
+						{name:'tituloleng', label:"Título del anuncio (cooficial)", index:'5', width:250},						
+						{name: 'textoleng', hidden: true, index:'6'},
+						{name:'url', label:"URL", index:'7', width:110, formatter: urlFormatter}
+    				], 	
+    				rowNum:50,
+    				rowList:[50,100,200],
+    				viewrecords: true,
+    				pager:'#pager2',
+    				loadComplete: function() {
+    					$('.ui-jqgrid-sortable').css('background','#1160a7');
+    					$('.ui-jqgrid-sortable').css('color','#ffffff');
+    					$('tr.jqgrow:odd').css('background', '#ececec');
+    					$('tr.jqgrow:even').css('background', '#ffffff');
+    					
+    					for (var i=0; i < $("tr.ui-jqgrid-labels th").length; i++) {
+    						jQuery("tr.ui-jqgrid2-labels th:eq(" + i + ")").attr("title", function (){return jQuery("tr.ui-jqgrid-labels th:eq(" + i + ")").text();});
+    						
+    						//Accesibilidad
+    					    jQuery("tr.ui-jqgrid-labels th:eq(" + i + ")").attr("tabindex", "0");
+    					}
+    				}
+    	    	});
+    	    	
+	  			// Accesibilidad
+  			    $("td[dir='ltr'] input").attr('id', 'idPagina2')
+  			    $("td[dir='ltr'] input").before("<label id='idLiteralPagina' for='idPagina2' class='hidden'>Página</label>")
+  				
+  			    $("td[dir='ltr'] select").attr('id', 'idRegPag2')
+  			    $("td[dir='ltr'] select").addClass('registrosPaginable')
+  			    $("td[dir='ltr']").addClass('anchuraGrid')
+  			    $("td[dir='ltr'] select").after("<label id='idLiteralRegPag' for='idRegPag2' class='hidden'> Registros por página</label>")
+    	    }
+    		
+    		function documentFormatter(cellValue, options, rowObject) {
+    			id = rowObject[0];
+    			fileExtension = rowObject[3].split('.').pop();
+    			img = '';
+    			if (fileExtension == 'pdf') {
+    				img = "<img alt='' src='" + getAppRaiz() + "/images/ico_pdf.png' />";
+    			} else if (fileExtension == 'xls' || fileExtension == 'xlsx') {
+    				img = "<img alt='' src='" + getAppRaiz() + "/images/ico_xls.png' />";
+    			} else if (fileExtension == 'doc' || fileExtension == 'docx') {
+    				img = "<img alt='' src='" + getAppRaiz() + "/images/ico_doc.png' />";
+    			}
+    			link = getAppRaiz() + '/GE/es/convocatoria/727204/document/' + id;
+    			    			
+    			return img + ' <a id=' + id +  ' href="#" onclick="enviar(\''+id+'\')">' + rowObject[3]; + '</a>';	
+    		   //return img + ' <a href="' + link + '">' + rowObject[2]; + '</a>';
+    		   //return img + ' <a id=' + id +  ' href="' + link + '" onclick="enviar(\''+id+'\')">' + rowObject[2]; + '</a>';
+    		}
+
+    		function lanzarInforme(paramUrl) {   		  	
+				cargarVentanaModal();
+
+				$.ajax({
+					type: 'GET',
+              		url: paramUrl,   		                
+               	  	async: true,
+                   	success: function(data){                    	  
+						document.location.href = getAppRaiz() + "/descargar/" + data;
+                 		setTimeout("destroyVentanaModal()",50);                        
+                   }                      
+             });  	 
+	    	}    		
+    		
+    		function dateFormatter(fecha){
+    	  		if(fecha != "" && fecha != null && fecha != "null"){
+    				var date = new Date(fecha);
+    		  		var dia = date.getDate();
+    		  		var mes = (date.getMonth()+1);
+    		  		var anio = date.getFullYear();
+    		  		if(dia < 10){
+    		  			dia = "0"+dia;
+    		  		}
+    		  		if(mes < 10){
+    		  			mes = "0"+mes;
+    		  		}
+    		  		return dia+"/"+mes+"/"+anio;
+    			}else{
+    				return "";
+    			}
+    	  		
+    	  	}
+    	</script>
+    </head>
+        
+    <body>     	  
+    	
+        
+		<div id="ventanaModal" style="text-align: center; min-height: 107px; width: auto; height: auto; display: none;" class="" scrolltop="0" scrollleft="0" title="Aviso">Cargando... Por favor espere</div><div id="modalAvisoLegal" title="Aviso legal" style="display: none; text-align: left;">
+			<p>La visualización de concesiones está sometida a los criterios 
+generales establecidos en el Real Decreto 130/2019 (art. 7.8), esto es 
+que son visibles:</p>
+	    	<p style="margin-left: 2em;">&#9679;&nbsp;&nbsp;Si el beneficiario es persona física, el año de concesión y el siguiente.</p>
+	    	<p style="margin-left: 2em;">&#9679;&nbsp;&nbsp;Si el beneficiario es persona jurídica, el año de concesión y los cuatro años siguientes.</p>
+	    	<p>Y además, según el art. 20.8 de la Ley General de Subvenciones 
+&lt;&lt;No serán publicadas las subvenciones concedidas cuando la 
+publicación de los datos del beneficiario en razón del objeto de la 
+subvención pueda ser contraria al respeto y salvaguarda del honor, a la 
+intimidad personal o familiar de las personas físicas en virtud de lo 
+establecido en la Ley Orgánica 1/1982, de 5 de mayo, de protección civil
+ del derecho al honor, a la intimidad personal y familiar y a la propia 
+imagen, y haya sido previsto en su normativa reguladora&gt;&gt;, por lo 
+que esta convocatoria pudiera tener concesiones que no se muestren en el
+ portal.</p>
+	    </div>
+	    
+    	
+        <header>
+	        	        
+	        <ul class="idiomas">
+	        	
+       	    		
+       	    			
+       	    				
+	            	    		
+	            	    			<li><a href="https://www.infosubvenciones.es/bdnstrans/GE/es/convocatoria/525644" title="Versión en castellano" lang="es">Bienvenido</a></li>
+	            	    		
+	            	    		            	    		
+	            	    		            	    		
+	            	    		            	    		
+	            	    		            	    		            	    		
+            	    		
+	           			
+       	    				
+	            	    		
+	            	    		
+	            	    			<li><a href="https://www.infosubvenciones.es/bdnstrans/GE/ca/convocatoria/525644" title="Versión en catalán" lang="ca">Benvigut</a></li>
+	            	    		            	    		
+	            	    		            	    		
+	            	    		            	    		
+	            	    		            	    		            	    		
+            	    		
+	           			
+       	    				
+	            	    		
+	            	    		            	    		
+	            	    		            	    		
+	            	    		
+	            	    			<li><a href="https://www.infosubvenciones.es/bdnstrans/GE/gl/convocatoria/525644" title="Versión en gallego" lang="gl">Benvido</a></li>
+	            	    		            	    		
+	            	    		            	    		            	    		
+            	    		
+	           			
+       	    				
+	            	    		
+	            	    		            	    		
+	            	    		
+	            	    			<li><a href="https://www.infosubvenciones.es/bdnstrans/GE/eu/convocatoria/525644" title="Versión en euskera" lang="eu">Ongi etorri</a></li>
+	            	    		            	    		
+	            	    		            	    		
+	            	    		            	    		            	    		
+            	    		
+	           			
+       	    				
+	            	    		
+	            	    		            	    		
+	            	    		            	    		
+	            	    		            	    		
+	            	    		
+	            	    			<li><a href="https://www.infosubvenciones.es/bdnstrans/GE/en/convocatoria/525644" title="Versión en inglés" lang="en">Welcome</a></li>
+	            	    		            	    		            	    		
+            	    		
+	           			
+       	    		
+       	    		
+       	    	
+	        </ul>
+	        
+        	
+
+<script type="text/javascript" src="525644_files/funVentana.js"></script>
+<script type="text/javascript" src="525644_files/bdnstrans.js"></script>
+
+
+
+
+
+ <div class="cabecera">
+         
+   	<div class="logo_BDNS">
+	   <a href="https://www.infosubvenciones.es/bdnstrans/es/index" title="Sistema Nacional de Publicidad de Subvenciones y Ayudas Públicas" lang="es">
+			<img src="525644_files/logo1_ge.png" alt="BDNS transparencia">		    	
+	   </a>
+   	</div>
+    
+    <hgroup><h1>Sistema Nacional de Publicidad de<br>Subvenciones y Ayudas Públicas</h1></hgroup>
+
+    <div class="logo_GB" style="text-align: right;width: 30%;">	    
+	    
+    		    
+    		
+	        	<img alt="Gobierno de España. Ministerio de Hacienda y Función Pública. Abre nueva ventana" src="525644_files/logo2_ge.gif" width="80%" height="80%">
+	        	
+    		
+		
+    </div>
+</div>
+<div class="texto_cabecera">
+				El uso y reutilización de los datos de este portal está sometido a 
+consideraciones especiales, que pudieran generar responsabilidades. 
+Consulte el aviso legal, en la parte inferior de esta página.
+</div>
+     
+ 
+
+
+  
+  <br>  
+  
+  
+  
+  
+  <div class="boton_ayuda">
+  	<a href="javascript:abreVentanaSelectorTam(getAppRaiz() + '/ayudas', '1', '360', '290')" title="Ayuda"><span>Ayuda</span><img src="525644_files/img_ayuda.png" alt=""></a>
+  </div> 
+
+
+        </header> 
+                
+        
+        
+        <nav>
+            <ul>
+				<li><a href="https://www.infosubvenciones.es/bdnstrans/GE/es/index" title="Inicio">Inicio</a></li>
+                
+				<li class="selected"><a href="https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias" title="Convocatorias">Convocatorias</a></li>
+                <li><a href="https://www.infosubvenciones.es/bdnstrans/GE/es/suscripciones" title="Suscripción de alertas">Alertas</a></li>
+                <li><a href="https://www.infosubvenciones.es/bdnstrans/GE/es/concesiones" title="Concesión de subvenciones y ayudas">Concesiones</a></li>
+                
+                
+                	<li><a href="https://www.infosubvenciones.es/bdnstrans/GE/es/concesiones/ayuda" title="Concesión de ayudas de estado">Ayudas de Estado</a></li>		
+                	<li><a href="https://www.infosubvenciones.es/bdnstrans/GE/es/concesiones/minimis" title="Concesiones de minimis">Minimis</a></li>		    	
+		    		<li><a href="https://www.infosubvenciones.es/bdnstrans/GE/es/planesestrategicos" title="Planes Estratégicos">Planes Estratégicos</a></li>    
+		    		<li><a href="https://www.infosubvenciones.es/bdnstrans/GE/es/grandesbeneficiarios" title="Concesiones a grandes beneficiarios">Grandes beneficiarios</a></li> 
+		    		<li><a href="https://www.infosubvenciones.es/bdnstrans/GE/es/partidospoliticos" title="Partidos políticos">Partidos políticos</a></li>    
+                	<li><a href="https://www.infosubvenciones.es/bdnstrans/GE/es/infracciones" title="Infracciones muy graves y sanciones">Infracciones y sanciones</a></li>
+	    		
+                
+                
+            </ul>
+        </nav>
+        
+        
+        
+        <article>
+        	<section>        	
+        		<div><h2 class="h2destacado">Información de la convocatoria</h2></div>
+                
+                <div class="bloque4columna">
+                	<div class="bloque3quinto ml0">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Órgano convocante</h3>                                
+                            </div>
+                            <div class="bloque1quinto ml0">
+                            	<p>ESTADO</p>
+                            </div>
+                            <div class="bloque1quinto">
+                            	<p>MINISTERIO DE CIENCIA E INNOVACIÓN</p>
+                            </div>
+                            <div class="bloque1quinto">
+                            	<p>AGENCIA ESTATAL DE INVESTIGACIÓN</p>
+                            </div>
+                        </div>
+                    </div>
+                	<div class="bloque2quinto">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Sede electrónica para la presentación de solicitudes</h3>
+                            </div>
+                            
+		                       	<p><a href="https://ciencia.sede.gob.es/" target="_blank">https://ciencia.sede.gob.es</a></p>
+	                       
+                        </div>
+                    </div>                                                            
+                </div>
+                
+                <div class="bloque4columna">
+                	<div style="width:8.2rem; margin: 0 0 0 1rem; float: left; !important;">
+                    	<div class="bloque">
+                            <div>
+                                <h3>Código BDNS</h3>
+                            </div>
+                            <p>525644</p>
+                        </div>
+                    </div>
+                  <div class="mt1_4" style="width:20.3rem; margin: 0 0 0 1rem; float: left; !important;">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Mecanismo de Recuperación y Resiliencia</h3>
+                            </div>
+                            <p>NO</p>
+                        </div>
+                  </div>  
+                    <div class="mt1_4" style="width:9.3rem; margin: 0 0 0 1rem; float: left; !important;">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Fecha de registro</h3>
+                            </div>
+                            <p>28/09/2020</p>
+                        </div>
+                    </div>          
+                            
+                    <div class="bloque1quinto mt1_4">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Instrumento de ayuda</h3>
+                            </div>
+                            <div class="capa_listado">
+                            	<ul>
+                                	
+                                		<li>SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN </li>
+                                	
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bloque1quinto mt1_4">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Tipo de convocatoria</h3>
+                            </div>
+                            
+                            	
+                            	
+                            		
+		                            	
+		                            	
+		                            		<p>Concurrencia competitiva - canónica</p>
+		                            	
+		                            	
+                            		
+                            	
+                            	
+                            
+                        </div>
+                    </div>
+	               <div style="width:15.3rem; margin: 0 0 0 1rem; float: left; !important;">
+	                	<div class="bloque">
+                            <div>                                
+                                <h3>Presupuesto total de la convocatoria</h3>
+                            </div>
+                                                          	
+                           		
+                            	
+                            		<p>108,954,960.00 €</p>
+                           		
+                           	
+                        </div>
+	               </div>
+                </div>
+        		
+        	    <div class="bloque4columna">
+                	<div class="bloque">
+                    	<div>
+                        	<h3>Título de la convocatoria en español</h3>
+                        </div>
+                        <p>Resolución de 30 de septiembre de 2020, de la
+ Presidencia de la Agencia Estatal de Investigación, por la que se 
+aprueba la convocatoria 2020 de ayudas para contratos predoctorales en 
+el marco del Plan Estatal de I+D+i 2017-2020..</p>
+                    </div>
+                </div>
+        		
+        	    <div class="bloque4columna">
+                	<div class="bloque">
+                    	<div>
+                        	<h3>Título de la convocatoria en otra lengua cooficial</h3>
+                        </div>
+                        <p>.</p>
+                    </div>
+                </div>
+                
+                <div class="bloque4columna">
+                	<div class="bloque2quinto ml0 mt1_4">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Tipo de beneficiario elegible</h3>
+                            </div>
+                            <div class="capa_listado">
+                            	<ul>
+                                	
+                                		<li>PERSONAS JURÍDICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA</li>
+                                	
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                	<div class="bloque1quinto">                    	
+                        <div class="bloque">
+                            <div>                                
+                                <h3>Sector económico del beneficiario</h3>
+                            </div>
+                            <div class="capa_listado">
+                            	<ul>
+                                	
+                                		<li>ACTIVIDADES PROFESIONALES, CIENTÍFICAS Y TÉCNICAS</li>
+                                	
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bloque1quinto mt1_4">                    	
+                        <div class="bloque">
+                            <div>                                
+                                <h3>Región de impacto</h3>
+                            </div>
+                            <div class="capa_listado">
+                            	<ul>
+                                	
+                                		<li>ES - ESPAÑA </li>
+                                	
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bloque1quinto mt1_4">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Finalidad (política de gasto)</h3>
+                            </div>
+                            <p>INVESTIGACIÓN, DESARROLLO E INNOVACIÓN</p>
+                        </div>                    	
+                    </div>                    
+                </div>
+                
+                <div class="bloque4columna">
+                	<div class="bloque3quinto ml0">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Título de las Bases reguladoras</h3>
+                            </div>
+                            <p>Orden CNU/692/2019, de 20 de junio, por 
+la que se aprueban las bases reguladoras para la concesión de ayudas en 
+el marco del Programa de Promoción del Talento y su Empleabilidad en 
+I+D+i del Plan Estatal de I+D+i 2017-2020</p>
+                        </div>                    
+                    </div>
+                	<div class="bloque2quinto">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Dirección electrónica de las bases reguladoras</h3>
+                            </div>
+                            
+		                       	<p><a href="https://www.boe.es/diario_boe/txt.php?id=BOE-A-2019-9533" target="_blank">https://www.boe.es/diario_boe/txt.php?id=BOE-A-2019-9533</a></p>		                       	   
+	                                                   
+                        </div>
+                    </div>                                                            
+                </div>
+                 
+                <div class="bloque4columna">            
+	               	
+	           		
+	           		
+	           		
+           		
+           			<div class="boton_det_conv">
+						<div class="ml0">
+							<button type="button" title="Ver concesiones de esta convocatoria" onclick="javascript:mostrarAnuncioLegal('/bdnstrans/GE/es/concesiones/convocatoria/525644', 'Aviso legal', 'Siguiente')">Ver concesiones de esta convocatoria</button>
+						</div>
+						
+						   	<div>
+						   		<a href="https://www.infosubvenciones.es/bdnstrans/GE/es/concesiones/ayuda/convocatoria/525644" target="_blank"><button type="button" title="Ver concesiones de Ayudas de Estado de esta convocatoria">Ver concesiones de Ayudas de Estado de esta convocatoria</button></a>
+					   		</div>
+						
+						<div>
+							<a href="https://www.infosubvenciones.es/bdnstrans/GE/es/concesiones/minimis/convocatoria/525644" target="_blank"><button type="button" title="Ver concesiones de minimis de esta convocatoria">Ver concesiones de minimis de esta convocatoria</button></a>
+						</div>
+						<div>
+							<button type="button" title="Imprimir ficha PDF de la convocatoria" onclick="javascript:lanzarInforme('/bdnstrans/GE/es/convocatoria/exportar/525644');">Imprimir ficha PDF de la convocatoria</button>
+						</div>
+					</div>
+                </div>
+				<br><br><br><br>
+                
+                <div><h2 class="h2destacado">Información sobre la Solicitud</h2></div>
+                
+                <div class="bloque4columna">
+                	<div class="bloque2columna ml0">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>¿El extracto de la convocatoria se publica en diario oficial?</h3>
+                            </div>
+                            
+	                           	
+	                           		<p>Sí</p>
+	                           	
+	                           	
+	                                         
+                        </div>
+                    </div>
+                    <div class="bloque1columna">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>¿Se puede solicitar indefinidamente?</h3>
+                            </div>
+                            
+                            	
+                            	
+                            		<p>No</p>
+                            	
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bloque4columna">
+                	<div class="bloque2columna ml0">
+                    	<div class="bloque">                            
+                            
+                       			<p>Esta convocatoria no será válida mientras 
+no se publique su extracto en el diario oficial; la publicación del 
+extracto se puede consultar en la tabla "Extracto de la convocatoria" 
+que se muestra más abajo.</p>
+                       		
+                        </div>
+                    </div>
+                    <div class="bloque1columna">                    	
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Fecha de inicio del periodo de solicitud</h3>
+                            </div>
+                            <div class="apartado ml0">
+                            	<p>13/10/2020</p>
+                            </div>
+                                                   			
+                       			<div class="apartado">
+                            		<p>A las 00:00 (hora peninsular española) del día</p>
+                            	</div>
+                       		                       		
+                    	</div>
+                    </div>
+                	<div class="bloque1columna">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Fecha de finalización del periodo de solicitud</h3>
+                            </div>
+                            <div class="apartado ml0">
+                            	<p>27/10/2020</p>
+                            </div>
+                                                   			
+                       			<div class="apartado">
+                            		<p>A las 14:00 (hora peninsular española) del día</p>
+                            	</div>
+                       		
+                        </div>
+                    </div>
+                </div>
+                
+                <div><h2 class="h2destacado">Información específica sobre Ayudas de Estado y de minimis</h2></div>
+                
+                <div class="bloque4columna">
+                	<div class="bloque1tercio ml0">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>SA Number (Referencia de ayuda de estado)</h3>
+                            </div>
+                            <p></p>
+                        </div>
+                    </div>
+                    <div class="bloque1tercio">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>SA Number (Enlace UE)</h3>
+                            </div>
+                                                                                    
+                        </div>
+                    </div>
+                	<div class="bloque1tercio">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Cofinanciado con Fondos UE</h3>
+                            </div>
+                            <div class="capa_listado">
+                            	<ul>
+                            	
+	                            	
+	                            	
+	                            		
+                                			<li>FSE - FONDO SOCIAL EUROPEO </li>
+                                		
+	                            	
+	                                                            	
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bloque4columna">
+                    <div class="bloque1tercio ml0">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Reglamento (UE)</h3>
+                            </div>
+                            <p></p>
+                        </div>
+                    </div>
+                    <div class="bloque1tercio">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Objetivos</h3>
+                            </div>
+                            <div class="capa_listado">
+                            	<ul>
+                                	
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bloque1tercio">
+                    	<div class="bloque">
+                            <div>                                
+                                <h3>Sector de productos</h3>
+                            </div>
+                            <p></p>
+                        </div>
+                    </div>                 
+                </div>                
+        	</section>
+        	
+        	<section>
+        		<div>        			
+        			<h2>Documentos de la convocatoria</h2>
+        		</div>
+                <div class="tablas_resultados">
+                    <div class="ui-jqgrid ui-widget ui-widget-content ui-corner-all" id="gbox_grid" dir="ltr" style="width: 995px;"><div class="ui-widget-overlay jqgrid-overlay" id="lui_grid"></div><div class="loading ui-state-default ui-state-active" id="load_grid">Cargando...</div><div class="ui-jqgrid-view" id="gview_grid" style="width: 995px;"><div class="ui-jqgrid-titlebar ui-widget-header ui-corner-top ui-helper-clearfix" style="display: none;"><a role="link" href="javascript:void(0)" class="ui-jqgrid-titlebar-close HeaderButton" style="right: 0px;"><span class="ui-icon ui-icon-circle-triangle-n"></span></a><span class="ui-jqgrid-title"></span></div><div style="width: 995px;" class="ui-state-default ui-jqgrid-hdiv"><div class="ui-jqgrid-hbox"><table class="ui-jqgrid-htable" style="width:977px" role="grid" aria-labelledby="gbox_grid" cellspacing="0" cellpadding="0" border="0"><thead><tr class="ui-jqgrid-labels" role="rowheader"><th id="grid_ID" role="columnheader" class="ui-state-default ui-th-column ui-th-ltr" style="width: 150px; display: none;" title="&nbsp;ID" tabindex="0"><span class="ui-jqgrid-resize ui-jqgrid-resize-ltr" style="cursor: col-resize;">&nbsp;</span><div id="jqgh_grid_ID" class="ui-jqgrid-sortable" style="background: rgb(17, 96, 167) none repeat scroll 0% 0%; color: rgb(255, 255, 255);">ID<span class="s-ico" style=""><span sort="asc" class="ui-grid-ico-sort ui-icon-asc ui-icon ui-icon-triangle-1-n ui-sort-ltr"></span><span sort="desc" class="ui-grid-ico-sort ui-icon-desc ui-state-disabled ui-icon ui-icon-triangle-1-s ui-sort-ltr"></span></span></div></th><th id="grid_fechaReg" role="columnheader" class="ui-state-default ui-th-column ui-th-ltr" style="width: 123px;" title="&nbsp;Fecha de registro" tabindex="0"><span class="ui-jqgrid-resize ui-jqgrid-resize-ltr" style="cursor: col-resize;">&nbsp;</span><div id="jqgh_grid_fechaReg" class="ui-jqgrid-sortable" style="background: rgb(17, 96, 167) none repeat scroll 0% 0%; color: rgb(255, 255, 255);">Fecha de registro<span class="s-ico" style="display:none"><span sort="asc" class="ui-grid-ico-sort ui-icon-asc ui-state-disabled ui-icon ui-icon-triangle-1-n ui-sort-ltr"></span><span sort="desc" class="ui-grid-ico-sort ui-icon-desc ui-state-disabled ui-icon ui-icon-triangle-1-s ui-sort-ltr"></span></span></div></th><th id="grid_fechapublicacion" role="columnheader" class="ui-state-default ui-th-column ui-th-ltr" style="width: 123px;" title="&nbsp;Fecha de publicación" tabindex="0"><span class="ui-jqgrid-resize ui-jqgrid-resize-ltr" style="cursor: col-resize;">&nbsp;</span><div id="jqgh_grid_fechapublicacion" class="ui-jqgrid-sortable" style="background: rgb(17, 96, 167) none repeat scroll 0% 0%; color: rgb(255, 255, 255);">Fecha de publicación<span class="s-ico" style="display:none"><span sort="asc" class="ui-grid-ico-sort ui-icon-asc ui-state-disabled ui-icon ui-icon-triangle-1-n ui-sort-ltr"></span><span sort="desc" class="ui-grid-ico-sort ui-icon-desc ui-state-disabled ui-icon ui-icon-triangle-1-s ui-sort-ltr"></span></span></div></th><th id="grid_documentos" role="columnheader" class="ui-state-default ui-th-column ui-th-ltr" style="width: 716px;" title="&nbsp;Documentos" tabindex="0"><span class="ui-jqgrid-resize ui-jqgrid-resize-ltr" style="cursor: col-resize;">&nbsp;</span><div id="jqgh_grid_documentos" class="ui-jqgrid-sortable" style="background: rgb(17, 96, 167) none repeat scroll 0% 0%; color: rgb(255, 255, 255);">Documentos<span class="s-ico" style="display:none"><span sort="asc" class="ui-grid-ico-sort ui-icon-asc ui-state-disabled ui-icon ui-icon-triangle-1-n ui-sort-ltr"></span><span sort="desc" class="ui-grid-ico-sort ui-icon-desc ui-state-disabled ui-icon ui-icon-triangle-1-s ui-sort-ltr"></span></span></div></th></tr></thead></table></div></div><div class="ui-jqgrid-bdiv" style="height: 140px; width: 995px;"><div style="position:relative;"><div></div><table id="grid" tabindex="0" role="grid" aria-multiselectable="false" aria-labelledby="gbox_grid" class="ui-jqgrid-btable" style="width: 977px;" cellspacing="0" cellpadding="0" border="0"><tbody><tr class="jqgfirstrow" role="row" style="height:auto"><td role="gridcell" style="height:0px;width:150px;display:none;"></td><td role="gridcell" style="height:0px;width:123px;"></td><td role="gridcell" style="height:0px;width:123px;"></td><td role="gridcell" style="height:0px;width:716px;"></td></tr><tr role="row" id="1" tabindex="-1" class="ui-widget-content jqgrow ui-row-ltr" style="background: rgb(255, 255, 255) none repeat scroll 0% 0%;"><td role="gridcell" style="display: none; white-space: normal;" title="458217" aria-describedby="grid_ID">458217</td><td role="gridcell" style="text-align: center; white-space: normal;" title="30/09/2020" aria-describedby="grid_fechaReg">30/09/2020</td><td role="gridcell" style="text-align: center; white-space: normal;" title="05/10/2020" aria-describedby="grid_fechapublicacion">05/10/2020</td><td role="gridcell" style="white-space: normal;" title=" Convocatoria ayudas contratos predoctorales 2020.pdf" aria-describedby="grid_documentos"><img alt="" src="525644_files/ico_pdf.png"> <a id="458217" href="#" onclick="enviar('458217')">Convocatoria ayudas contratos predoctorales 2020.pdf</a></td></tr><tr role="row" id="2" tabindex="-1" class="ui-widget-content jqgrow ui-row-ltr" style="background: rgb(236, 236, 236) none repeat scroll 0% 0%;"><td role="gridcell" style="display: none; white-space: normal;" title="549902" aria-describedby="grid_ID">549902</td><td role="gridcell" style="text-align: center; white-space: normal;" title="13/04/2021" aria-describedby="grid_fechaReg">13/04/2021</td><td role="gridcell" style="text-align: center; white-space: normal;" title="13/04/2021" aria-describedby="grid_fechapublicacion">13/04/2021</td><td role="gridcell" style="white-space: normal;" title=" resolucion ampliacion plazo concesion PRE2020.pdf" aria-describedby="grid_documentos"><img alt="" src="525644_files/ico_pdf.png"> <a id="549902" href="#" onclick="enviar('549902')">resolucion ampliacion plazo concesion PRE2020.pdf</a></td></tr><tr role="row" id="3" tabindex="-1" class="ui-widget-content jqgrow ui-row-ltr" style="background: rgb(255, 255, 255) none repeat scroll 0% 0%;"><td role="gridcell" style="display: none; white-space: normal;" title="590421" aria-describedby="grid_ID">590421</td><td role="gridcell" style="text-align: center; white-space: normal;" title="29/06/2021" aria-describedby="grid_fechaReg">29/06/2021</td><td role="gridcell" style="text-align: center; white-space: normal;" title="29/06/2021" aria-describedby="grid_fechapublicacion">29/06/2021</td><td role="gridcell" style="white-space: normal;" title=" Resolucion_Concesion_PREDOC2020_firmada.pdf" aria-describedby="grid_documentos"><img alt="" src="525644_files/ico_pdf.png"> <a id="590421" href="#" onclick="enviar('590421')">Resolucion_Concesion_PREDOC2020_firmada.pdf</a></td></tr><tr role="row" id="4" tabindex="-1" class="ui-widget-content jqgrow ui-row-ltr" style="background: rgb(236, 236, 236) none repeat scroll 0% 0%;"><td role="gridcell" style="display: none; white-space: normal;" title="592212" aria-describedby="grid_ID">592212</td><td role="gridcell" style="text-align: center; white-space: normal;" title="02/07/2021" aria-describedby="grid_fechaReg">02/07/2021</td><td role="gridcell" style="text-align: center; white-space: normal;" title="02/07/2021" aria-describedby="grid_fechapublicacion">02/07/2021</td><td role="gridcell" style="white-space: normal;" title=" PRE2020_RC_ModificacionRC_CambiosCentros_Firmada.pdf" aria-describedby="grid_documentos"><img alt="" src="525644_files/ico_pdf.png"> <a id="592212" href="#" onclick="enviar('592212')">PRE2020_RC_ModificacionRC_CambiosCentros_Firmada.pdf</a></td></tr><tr role="row" id="5" tabindex="-1" class="ui-widget-content jqgrow ui-row-ltr" style="background: rgb(255, 255, 255) none repeat scroll 0% 0%;"><td role="gridcell" style="display: none; white-space: normal;" title="634857" aria-describedby="grid_ID">634857</td><td role="gridcell" style="text-align: center; white-space: normal;" title="13/10/2021" aria-describedby="grid_fechaReg">13/10/2021</td><td role="gridcell" style="text-align: center; white-space: normal;" title="13/10/2021" aria-describedby="grid_fechapublicacion">13/10/2021</td><td role="gridcell" style="white-space: normal;" title=" PRE2020_SegundaRC_Art20_3_abc_Firmada.pdf" aria-describedby="grid_documentos"><img alt="" src="525644_files/ico_pdf.png"> <a id="634857" href="#" onclick="enviar('634857')">PRE2020_SegundaRC_Art20_3_abc_Firmada.pdf</a></td></tr><tr role="row" id="6" tabindex="-1" class="ui-widget-content jqgrow ui-row-ltr" style="background: rgb(236, 236, 236) none repeat scroll 0% 0%;"><td role="gridcell" style="display: none; white-space: normal;" title="634859" aria-describedby="grid_ID">634859</td><td role="gridcell" style="text-align: center; white-space: normal;" title="13/10/2021" aria-describedby="grid_fechaReg">13/10/2021</td><td role="gridcell" style="text-align: center; white-space: normal;" title="13/10/2021" aria-describedby="grid_fechapublicacion">13/10/2021</td><td role="gridcell" style="white-space: normal;" title=" PRE2020_TerceraRC_Art20_4_Firmada.pdf" aria-describedby="grid_documentos"><img alt="" src="525644_files/ico_pdf.png"> <a id="634859" href="#" onclick="enviar('634859')">PRE2020_TerceraRC_Art20_4_Firmada.pdf</a></td></tr></tbody></table></div></div></div><div class="ui-jqgrid-resize-mark" id="rs_mgrid">&nbsp;</div><div id="pager" style="width: 995px;" class="ui-state-default ui-jqgrid-pager ui-corner-bottom" dir="ltr"><div id="pg_pager" class="ui-pager-control" role="group"><table class="ui-pg-table" style="width:100%;table-layout:fixed;height:100%;" role="row" cellspacing="0" cellpadding="0" border="0"><tbody><tr><td id="pager_left" align="left"></td><td id="pager_center" style="white-space: pre; width: 247px;" align="center"><table style="table-layout:auto;" class="ui-pg-table" cellspacing="0" cellpadding="0" border="0"><tbody><tr><td id="first_pager" class="ui-pg-button ui-corner-all ui-state-disabled"><span class="ui-icon ui-icon-seek-first"></span></td><td id="prev_pager" class="ui-pg-button ui-corner-all ui-state-disabled"><span class="ui-icon ui-icon-seek-prev"></span></td><td class="ui-pg-button ui-state-disabled" style="width:4px;"><span class="ui-separator"></span></td><td dir="ltr" class="anchuraGrid">Página <label id="idLiteralPagina" for="idPagina2" class="hidden">Página</label><input class="ui-pg-input" type="text" size="2" maxlength="7" value="1" role="textbox" id="idPagina2"> de <span id="sp_1_pager">1</span></td><td class="ui-pg-button ui-state-disabled" style="width:4px;"><span class="ui-separator"></span></td><td id="next_pager" class="ui-pg-button ui-corner-all ui-state-disabled"><span class="ui-icon ui-icon-seek-next"></span></td><td id="last_pager" class="ui-pg-button ui-corner-all ui-state-disabled"><span class="ui-icon ui-icon-seek-end"></span></td><td dir="ltr" class="anchuraGrid"><select class="ui-pg-selbox registrosPaginable" role="listbox" id="idRegPag2"><option role="option" value="50" selected="selected">50</option><option role="option" value="100">100</option><option role="option" value="200">200</option></select><label id="idLiteralRegPag" for="idRegPag2" class="hidden"> Registros por página</label></td></tr></tbody></table></td><td id="pager_right" align="right"><div dir="ltr" style="text-align:right" class="ui-paging-info">Mostrando 1 - 6 de 6</div></td></tr></tbody></table></div></div></div>
+                    
+                </div>
+            </section>
+            
+            <section>
+        		<div>
+        			<br><br>
+        			<h2>Extractos de la convocatoria</h2>
+        		</div>
+                <div class="tablas_resultados">
+                    <div class="ui-jqgrid ui-widget ui-widget-content ui-corner-all" id="gbox_grid2" dir="ltr" style="width: 995px;"><div class="ui-widget-overlay jqgrid-overlay" id="lui_grid2"></div><div class="loading ui-state-default ui-state-active" id="load_grid2">Cargando...</div><div class="ui-jqgrid-view" id="gview_grid2" style="width: 995px;"><div class="ui-jqgrid-titlebar ui-widget-header ui-corner-top ui-helper-clearfix" style="display: none;"><a role="link" href="javascript:void(0)" class="ui-jqgrid-titlebar-close HeaderButton" style="right: 0px;"><span class="ui-icon ui-icon-circle-triangle-n"></span></a><span class="ui-jqgrid-title"></span></div><div style="width: 995px;" class="ui-state-default ui-jqgrid-hdiv"><div class="ui-jqgrid-hbox"><table class="ui-jqgrid-htable" style="width:977px" role="grid" aria-labelledby="gbox_grid2" cellspacing="0" cellpadding="0" border="0"><thead><tr class="ui-jqgrid-labels" role="rowheader"><th id="grid2_ID" role="columnheader" class="ui-state-default ui-th-column ui-th-ltr" style="width: 150px; display: none;" title="&nbsp;ID" tabindex="0"><span class="ui-jqgrid-resize ui-jqgrid-resize-ltr" style="cursor: col-resize;">&nbsp;</span><div id="jqgh_grid2_ID" class="ui-jqgrid-sortable" style="background: rgb(17, 96, 167) none repeat scroll 0% 0%; color: rgb(255, 255, 255);">ID<span class="s-ico" style=""><span sort="asc" class="ui-grid-ico-sort ui-icon-asc ui-icon ui-icon-triangle-1-n ui-sort-ltr"></span><span sort="desc" class="ui-grid-ico-sort ui-icon-desc ui-state-disabled ui-icon ui-icon-triangle-1-s ui-sort-ltr"></span></span></div></th><th id="grid2_diariooficial" role="columnheader" class="ui-state-default ui-th-column ui-th-ltr" style="width: 245px;" title="&nbsp;Diario oficial" tabindex="0"><span class="ui-jqgrid-resize ui-jqgrid-resize-ltr" style="cursor: col-resize;">&nbsp;</span><div id="jqgh_grid2_diariooficial" class="ui-jqgrid-sortable" style="background: rgb(17, 96, 167) none repeat scroll 0% 0%; color: rgb(255, 255, 255);">Diario oficial<span class="s-ico" style="display:none"><span sort="asc" class="ui-grid-ico-sort ui-icon-asc ui-state-disabled ui-icon ui-icon-triangle-1-n ui-sort-ltr"></span><span sort="desc" class="ui-grid-ico-sort ui-icon-desc ui-state-disabled ui-icon ui-icon-triangle-1-s ui-sort-ltr"></span></span></div></th><th id="grid2_fechapublicacion" role="columnheader" class="ui-state-default ui-th-column ui-th-ltr" style="width: 108px;" title="&nbsp;Fecha de publicación" tabindex="0"><span class="ui-jqgrid-resize ui-jqgrid-resize-ltr" style="cursor: col-resize;">&nbsp;</span><div id="jqgh_grid2_fechapublicacion" class="ui-jqgrid-sortable" style="background: rgb(17, 96, 167) none repeat scroll 0% 0%; color: rgb(255, 255, 255);">Fecha de publicación<span class="s-ico" style="display:none"><span sort="asc" class="ui-grid-ico-sort ui-icon-asc ui-state-disabled ui-icon ui-icon-triangle-1-n ui-sort-ltr"></span><span sort="desc" class="ui-grid-ico-sort ui-icon-desc ui-state-disabled ui-icon ui-icon-triangle-1-s ui-sort-ltr"></span></span></div></th><th id="grid2_titulo" role="columnheader" class="ui-state-default ui-th-column ui-th-ltr" style="width: 245px;" title="&nbsp;Título del anuncio" tabindex="0"><span class="ui-jqgrid-resize ui-jqgrid-resize-ltr" style="cursor: col-resize;">&nbsp;</span><div id="jqgh_grid2_titulo" class="ui-jqgrid-sortable" style="background: rgb(17, 96, 167) none repeat scroll 0% 0%; color: rgb(255, 255, 255);">Título del anuncio<span class="s-ico" style="display:none"><span sort="asc" class="ui-grid-ico-sort ui-icon-asc ui-state-disabled ui-icon ui-icon-triangle-1-n ui-sort-ltr"></span><span sort="desc" class="ui-grid-ico-sort ui-icon-desc ui-state-disabled ui-icon ui-icon-triangle-1-s ui-sort-ltr"></span></span></div></th><th id="grid2_texto" role="columnheader" class="ui-state-default ui-th-column ui-th-ltr" style="width: 150px; display: none;" title="&nbsp;texto" tabindex="0"><span class="ui-jqgrid-resize ui-jqgrid-resize-ltr" style="cursor: col-resize;">&nbsp;</span><div id="jqgh_grid2_texto" class="ui-jqgrid-sortable" style="background: rgb(17, 96, 167) none repeat scroll 0% 0%; color: rgb(255, 255, 255);">texto<span class="s-ico" style="display:none"><span sort="asc" class="ui-grid-ico-sort ui-icon-asc ui-state-disabled ui-icon ui-icon-triangle-1-n ui-sort-ltr"></span><span sort="desc" class="ui-grid-ico-sort ui-icon-desc ui-state-disabled ui-icon ui-icon-triangle-1-s ui-sort-ltr"></span></span></div></th><th id="grid2_tituloleng" role="columnheader" class="ui-state-default ui-th-column ui-th-ltr" style="width: 245px;" title="&nbsp;Título del anuncio (cooficial)" tabindex="0"><span class="ui-jqgrid-resize ui-jqgrid-resize-ltr" style="cursor: col-resize;">&nbsp;</span><div id="jqgh_grid2_tituloleng" class="ui-jqgrid-sortable" style="background: rgb(17, 96, 167) none repeat scroll 0% 0%; color: rgb(255, 255, 255);">Título del anuncio (cooficial)<span class="s-ico" style="display:none"><span sort="asc" class="ui-grid-ico-sort ui-icon-asc ui-state-disabled ui-icon ui-icon-triangle-1-n ui-sort-ltr"></span><span sort="desc" class="ui-grid-ico-sort ui-icon-desc ui-state-disabled ui-icon ui-icon-triangle-1-s ui-sort-ltr"></span></span></div></th><th id="grid2_textoleng" role="columnheader" class="ui-state-default ui-th-column ui-th-ltr" style="width: 150px; display: none;" title="&nbsp;textoleng" tabindex="0"><span class="ui-jqgrid-resize ui-jqgrid-resize-ltr" style="cursor: col-resize;">&nbsp;</span><div id="jqgh_grid2_textoleng" class="ui-jqgrid-sortable" style="background: rgb(17, 96, 167) none repeat scroll 0% 0%; color: rgb(255, 255, 255);">textoleng<span class="s-ico" style="display:none"><span sort="asc" class="ui-grid-ico-sort ui-icon-asc ui-state-disabled ui-icon ui-icon-triangle-1-n ui-sort-ltr"></span><span sort="desc" class="ui-grid-ico-sort ui-icon-desc ui-state-disabled ui-icon ui-icon-triangle-1-s ui-sort-ltr"></span></span></div></th><th id="grid2_url" role="columnheader" class="ui-state-default ui-th-column ui-th-ltr" style="width: 109px;" title="&nbsp;URL" tabindex="0"><span class="ui-jqgrid-resize ui-jqgrid-resize-ltr" style="cursor: col-resize;">&nbsp;</span><div id="jqgh_grid2_url" class="ui-jqgrid-sortable" style="background: rgb(17, 96, 167) none repeat scroll 0% 0%; color: rgb(255, 255, 255);">URL<span class="s-ico" style="display:none"><span sort="asc" class="ui-grid-ico-sort ui-icon-asc ui-state-disabled ui-icon ui-icon-triangle-1-n ui-sort-ltr"></span><span sort="desc" class="ui-grid-ico-sort ui-icon-desc ui-state-disabled ui-icon ui-icon-triangle-1-s ui-sort-ltr"></span></span></div></th></tr></thead></table></div></div><div class="ui-jqgrid-bdiv" style="height: 140px; width: 995px;"><div style="position:relative;"><div></div><table id="grid2" tabindex="0" role="grid" aria-multiselectable="false" aria-labelledby="gbox_grid2" class="ui-jqgrid-btable" style="width: 977px;" cellspacing="0" cellpadding="0" border="0"><tbody><tr class="jqgfirstrow" role="row" style="height:auto"><td role="gridcell" style="height:0px;width:150px;display:none;"></td><td role="gridcell" style="height:0px;width:245px;"></td><td role="gridcell" style="height:0px;width:108px;"></td><td role="gridcell" style="height:0px;width:245px;"></td><td role="gridcell" style="height:0px;width:150px;display:none;"></td><td role="gridcell" style="height:0px;width:245px;"></td><td role="gridcell" style="height:0px;width:150px;display:none;"></td><td role="gridcell" style="height:0px;width:109px;"></td></tr><tr role="row" id="1" tabindex="-1" class="ui-widget-content jqgrow ui-row-ltr" style="background: rgb(255, 255, 255) none repeat scroll 0% 0%;"><td role="gridcell" style="display:none;" title="69010" aria-describedby="grid2_ID">69010</td><td role="gridcell" style="" title="BOE. BOLETÍN OFICIAL DEL ESTADO" aria-describedby="grid2_diariooficial">BOE. BOLETÍN OFICIAL DEL ESTADO</td><td role="gridcell" style="text-align:center;" title="05-10-2020" aria-describedby="grid2_fechapublicacion">05-10-2020</td><td role="gridcell" style="" title="Extracto de la Resolución de 30 de septiembre de 2020, de la Presidencia de la Agencia Estatal de Investigación por la que se aprueba la convocatoria de tramitación anticipada, correspondiente al año 2020, de las ayudas para contratos predoctorales para la formación de doctores contemplada en el Subprograma Estatal de Formación del Programa Estatal de Promoción del Talento y su Empleabilidad en I+D+i, en el marco del Plan Estatal de Investigación Científica y Técnica y de Innovación 2017-2020." aria-describedby="grid2_titulo">Extracto
+ de la Resolución de 30 de septiembre de 2020, de la Presidencia de la 
+Agencia Estatal de Investigación por la que se aprueba la convocatoria 
+de tramitación anticipada, correspondiente al año 2020, de las ayudas 
+para contratos predoctorales para la formación de doctores contemplada 
+en el Subprograma Estatal de Formación del Programa Estatal de Promoción
+ del Talento y su Empleabilidad en I+D+i, en el marco del Plan Estatal 
+de Investigación Científica y Técnica y de Innovación 2017-2020.</td><td role="gridcell" style="display:none;" title="Primero. Entidades beneficiarias.Podrán ser entidades participantes y beneficiarias de estas ayudas aquellas entidades de las contempladas en el artículo 3 de la orden de bases y en las que concurra alguna de las siguientes circunstancias:a) Que hayan obtenido una ayuda para la realización de un proyecto de investigación financiado por las ayudas a «Proyectos de I+D+i», en el marco del Programa Estatal de Generación de Conocimiento y Fortalecimiento Científico y Tecnológico del Sistema de I+D+i y del Programa Estatal de I+D+i Orientada a los Retos de la Sociedad, del Plan Estatal de Investigación Científica y Técnica y de Innovación 2017-2020, en su convocatoria 2019, convocada por la Presidencia de la Agencia Estatal de Investigación, y que tales proyectos hayan resultado seleccionados como susceptibles de tener asociada una ayuda para la formación de doctores, a través de esta convocatoria.b) Que hayan obtenido una ayuda en el marco de las convocatorias de Apoyo a Centros de Excelencia Severo Ochoa y Unidades de Excelencia María de Maeztu, correspondientes a 2016, 2017, 2018 y 2019, convocadas por la Presidencia de la Agencia Estatal de Investigación.c) Que sean centros públicos de I+D+i de investigación agraria y alimentaria dependientes de las Comunidades Autónomas, integrados en las Consejerías responsables de la investigación agroalimentaria de las Comunidades Autónomas, participantes en la Comisión Coordinadora de Investigación Agraria INIA-CCAA y participen en proyectos de investigación que se desarrollen dentro de una línea de investigación prioritaria para el año 2020, fijada por el Instituto Nacional de Investigación y Tecnología Agraria y Alimentaria.Las entidades participantes y beneficiarias deberán cumplir, igualmente, el resto de requisitos establecidos en la resolución de convocatoria.Segundo. Objeto.El objeto de esta convocatoria es la formación de doctores mediante la financiación de contratos laborales, bajo la modalidad de contrato predoctoral, con una duración máxima de 4 años, a fin de que investigadores en formación realicen una tesis doctoral asociada a un proyecto de investigación de entre los descritos en el artículo 13.2 de la resolución de convocatoria.A su vez, esta convocatoria también tiene por objeto financiar la contratación laboral, durante un periodo de orientación postdoctoral de una duración mínima de 6 meses y máxima de 12 meses, de aquellos doctorandos que obtengan el título de doctor con antelación al mes 43, a contar desde el inicio de la ayuda predoctoral.Podrán ser solicitantes todas aquellas personas que se encuentren matriculadas o admitidas en un programa de doctorado para el curso 2020/2021, en el momento de presentación de la solicitud. También podrán ser solicitantes todas aquellas personas que, en el momento de presentación de la solicitud, no estando matriculadas o admitidas en un programa de doctorado, estén en disposición de estarlo en la fecha en la que se formalice del contrato.Las personas solicitantes deberán cumplir, igualmente, el resto de requisitos establecidos en la resolución de convocatoria.Tercero. Bases reguladoras.Orden CNU/692/2019, de 20 de junio, por la que se aprueban las bases reguladoras para la concesión de ayudas públicas en el marco del Programa Estatal de Promoción del Talento y su Empleabilidad en I+D+i del Plan Estatal de Investigación Científica y Técnica y de Innovación 2017-2020 destinadas a personas físicas y organismos de investigación y de difusión de conocimientos.Cuarto. Cuantía.La cuantía total máxima destinada a financiar las ayudas de esta convocatoria será de 108.954.960 euros, con cargo al presupuesto de gastos de la Agencia Estatal de Investigación para el año 2022, o equivalentes de ejercicios posteriores, de acuerdo con las disponibilidades presupuestarias.Quinto. Plazo y forma de presentación de solicitudes.Las solicitudes de participación serán presentadas por los candidatos, de conformidad con el procedimiento que se describe en el artículo 12 de la resolución de convocatoria.La cumplimentación y envío telemático de la solicitud deberá realizarse obligatoriamente a través de los medios electrónicos habilitados para ello en la sede electrónica del Ministerio de Ciencia e Innovación.El plazo de presentación de las solicitudes de participación será del 13&nbsp;de octubre al 27&nbsp;de octubre de 2020 a las 14:00 horas (hora peninsular española).Sexto. Criterios de evaluación de las solicitudes de ayuda.Las solicitudes se evaluarán, con las puntuaciones establecidas en el Anexo I de la resolución de convocatoria, según los siguientes criterios:a) Trayectoria académica o profesional del candidato/a.b) Adecuación del candidato/a a las actividades de investigación a desarrollar.La descripción de los criterios y sus subcriterios, así como su valoración, se determinan en el Anexo I de la resolución de convocatoria." aria-describedby="grid2_texto"><p>Primero. Entidades beneficiarias.</p><p>Podrán ser entidades participantes y beneficiarias de estas ayudas aquellas entidades de las contempladas en el artículo 3 de la orden de bases y en las que concurra alguna de las siguientes circunstancias:</p><p>a) Que hayan obtenido una ayuda para la realización de un proyecto de investigación financiado por las ayudas a «Proyectos de I+D+i», en el marco del Programa Estatal de Generación de Conocimiento y Fortalecimiento Científico y Tecnológico del Sistema de I+D+i y del Programa Estatal de I+D+i Orientada a los Retos de la Sociedad, del Plan Estatal de Investigación Científica y Técnica y de Innovación 2017-2020, en su convocatoria 2019, convocada por la Presidencia de la Agencia Estatal de Investigación, y que tales proyectos hayan resultado seleccionados como susceptibles de tener asociada una ayuda para la formación de doctores, a través de esta convocatoria.</p><p>b) Que hayan obtenido una ayuda en el marco de las convocatorias de Apoyo a Centros de Excelencia Severo Ochoa y Unidades de Excelencia María de Maeztu, correspondientes a 2016, 2017, 2018 y 2019, convocadas por la Presidencia de la Agencia Estatal de Investigación.</p><p>c) Que sean centros públicos de I+D+i de investigación agraria y alimentaria dependientes de las Comunidades Autónomas, integrados en las Consejerías responsables de la investigación agroalimentaria de las Comunidades Autónomas, participantes en la Comisión Coordinadora de Investigación Agraria INIA-CCAA y participen en proyectos de investigación que se desarrollen dentro de una línea de investigación prioritaria para el año 2020, fijada por el Instituto Nacional de Investigación y Tecnología Agraria y Alimentaria.</p><p>Las entidades participantes y beneficiarias deberán cumplir, igualmente, el resto de requisitos establecidos en la resolución de convocatoria.</p><p>Segundo. Objeto.</p><p>El objeto de esta convocatoria es la formación de doctores mediante la financiación de contratos laborales, bajo la modalidad de contrato predoctoral, con una duración máxima de 4 años, a fin de que investigadores en formación realicen una tesis doctoral asociada a un proyecto de investigación de entre los descritos en el artículo 13.2 de la resolución de convocatoria.</p><p>A su vez, esta convocatoria también tiene por objeto financiar la contratación laboral, durante un periodo de orientación postdoctoral de una duración mínima de 6 meses y máxima de 12 meses, de aquellos doctorandos que obtengan el título de doctor con antelación al mes 43, a contar desde el inicio de la ayuda predoctoral.</p><p>Podrán ser solicitantes todas aquellas personas que se encuentren matriculadas o admitidas en un programa de doctorado para el curso 2020/2021, en el momento de presentación de la solicitud. También podrán ser solicitantes todas aquellas personas que, en el momento de presentación de la solicitud, no estando matriculadas o admitidas en un programa de doctorado, estén en disposición de estarlo en la fecha en la que se formalice del contrato.</p><p>Las personas solicitantes deberán cumplir, igualmente, el resto de requisitos establecidos en la resolución de convocatoria.</p><p>Tercero. Bases reguladoras.</p><p>Orden CNU/692/2019, de 20 de junio, por la que se aprueban las bases reguladoras para la concesión de ayudas públicas en el marco del Programa Estatal de Promoción del Talento y su Empleabilidad en I+D+i del Plan Estatal de Investigación Científica y Técnica y de Innovación 2017-2020 destinadas a personas físicas y organismos de investigación y de difusión de conocimientos.</p><p>Cuarto. Cuantía.</p><p>La cuantía total máxima destinada a financiar las ayudas de esta convocatoria será de 108.954.960 euros, con cargo al presupuesto de gastos de la Agencia Estatal de Investigación para el año 2022, o equivalentes de ejercicios posteriores, de acuerdo con las disponibilidades presupuestarias.</p><p>Quinto. Plazo y forma de presentación de solicitudes.</p><p>Las solicitudes de participación serán presentadas por los candidatos, de conformidad con el procedimiento que se describe en el artículo 12 de la resolución de convocatoria.</p><p>La cumplimentación y envío telemático de la solicitud deberá realizarse obligatoriamente a través de los medios electrónicos habilitados para ello en la sede electrónica del Ministerio de Ciencia e Innovación.</p><p>El plazo de presentación de las solicitudes de participación será del 13&nbsp;de octubre al 27&nbsp;de octubre de 2020 a las 14:00 horas (hora peninsular española).</p><p>Sexto. Criterios de evaluación de las solicitudes de ayuda.</p><p>Las solicitudes se evaluarán, con las puntuaciones establecidas en el Anexo I de la resolución de convocatoria, según los siguientes criterios:</p><p>a) Trayectoria académica o profesional del candidato/a.</p><p>b) Adecuación del candidato/a a las actividades de investigación a desarrollar.</p><p>La descripción de los criterios y sus subcriterios, así como su valoración, se determinan en el Anexo I de la resolución de convocatoria.</p></td><td role="gridcell" style="" title="" aria-describedby="grid2_tituloleng">&nbsp;</td><td role="gridcell" style="display:none;" title="" aria-describedby="grid2_textoleng">&nbsp;</td><td role="gridcell" style="" title="http://www.boe.es/diario_boe/verifica.php?acc=Verificar&amp;c=BOE-B-2020-33560" aria-describedby="grid2_url"><a href="http://www.boe.es/diario_boe/verifica.php?acc=Verificar&amp;c=BOE-B-2020-33560" target="_blank">http://www.boe.es/diario_boe/verifica.php?acc=Verificar&amp;c=BOE-B-2020-33560</a></td></tr></tbody></table></div></div></div><div class="ui-jqgrid-resize-mark" id="rs_mgrid2">&nbsp;</div><div id="pager2" style="width: 995px;" class="ui-state-default ui-jqgrid-pager ui-corner-bottom" dir="ltr"><div id="pg_pager2" class="ui-pager-control" role="group"><table class="ui-pg-table" style="width:100%;table-layout:fixed;height:100%;" role="row" cellspacing="0" cellpadding="0" border="0"><tbody><tr><td id="pager2_left" align="left"></td><td id="pager2_center" style="white-space: pre; width: 247px;" align="center"><table style="table-layout:auto;" class="ui-pg-table" cellspacing="0" cellpadding="0" border="0"><tbody><tr><td id="first_pager2" class="ui-pg-button ui-corner-all ui-state-disabled"><span class="ui-icon ui-icon-seek-first"></span></td><td id="prev_pager2" class="ui-pg-button ui-corner-all ui-state-disabled"><span class="ui-icon ui-icon-seek-prev"></span></td><td class="ui-pg-button ui-state-disabled" style="width:4px;"><span class="ui-separator"></span></td><td dir="ltr" class="anchuraGrid">Página <label id="idLiteralPagina" for="idPagina2" class="hidden">Página</label><input class="ui-pg-input" type="text" size="2" maxlength="7" value="1" role="textbox" id="idPagina2"> de <span id="sp_1_pager2">1</span></td><td class="ui-pg-button ui-state-disabled" style="width:4px;"><span class="ui-separator"></span></td><td id="next_pager2" class="ui-pg-button ui-corner-all ui-state-disabled"><span class="ui-icon ui-icon-seek-next"></span></td><td id="last_pager2" class="ui-pg-button ui-corner-all ui-state-disabled"><span class="ui-icon ui-icon-seek-end"></span></td><td dir="ltr" class="anchuraGrid"><select class="ui-pg-selbox registrosPaginable" role="listbox" id="idRegPag2"><option role="option" value="50" selected="selected">50</option><option role="option" value="100">100</option><option role="option" value="200">200</option></select><label id="idLiteralRegPag" for="idRegPag2" class="hidden"> Registros por página</label></td></tr></tbody></table></td><td id="pager2_right" align="right"><div dir="ltr" style="text-align:right" class="ui-paging-info">Mostrando 1 - 1 de 1</div></td></tr></tbody></table></div></div></div>
+                    
+                </div>
+            </section>
+        </article>
+        
+        
+        <script type="text/javascript" src="525644_files/funGenerales.js"></script>
+<script type="text/javascript" src="525644_files/funVentana.js"></script>
+<script type="text/javascript" src="525644_files/bdnstrans.js"></script>
+<script type="text/javascript" src="525644_files/informes.js"></script>
+
+<script>
+	function accesibilidad() { 
+		abreVentanaSelectorTam(getAppRaiz() + '/GE/es/accesibilidad', '1', '760', '660');       			  	 
+    }
+	
+	function avisolegal() { 
+		abreVentanaSelectorTam(getAppRaiz() + '/GE/es/avisolegal', '2', '922', '890');       			  	 
+    }
+</script>
+
+<!-- Parte pie de página -->
+<footer>
+    
+    <ul>
+	    
+    	
+        <li><a href="javascript:accesibilidad();" "="" title="Accesibilidad">Accesibilidad</a></li>
+    </ul>
+    
+    <br>
+    
+    <ul>
+    	
+    	<li><a href="javascript:avisolegal();" "="" title="Aviso legal SNPSAP">Aviso legal SNPSAP</a></li>
+    </ul>
+    
+	<p>Última actualización: 22/07/2022</p>
+    
+    <!-- Listado con imágenes de certificados -->
+    
+    
+    
+    
+    
+    
+    
+        
+    
+    <ul class="listado_imagenes">
+        <li><a href="http://www.w3.org/WAI/WCAG1AA-Conformance" title="Explicación del Nivel Doble-A de Conformidad" target="_blank"><img src="525644_files/WAI-AA.png" alt="Icono de conformidad con el Nivel Doble-A"></a></li>
+        <li><a href="https://validator.w3.org/" title="XHTML 1.0 Transitional Válido" target="_blank"><img src="525644_files/XHTML.png" alt="Icono XHTML 1.0 Transitional Válido"></a></li>
+        <li><a href="http://jigsaw.w3.org/css-validator/" title="CSS Válido" target="_blank"><img src="525644_files/CSS.png" alt="Icono CSS Válido"></a></li>
+    </ul>
+    <!-- Fin listado con imágenes de certificados -->
+</footer>
+<!-- Fin parte pie de página -->
+         
+    
+</body></html>

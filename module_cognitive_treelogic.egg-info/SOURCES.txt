@@ -1,0 +1,14 @@
+README.md
+setup.py
+module_cognitive_treelogic/DataMining.py
+module_cognitive_treelogic/ExtractXML.py
+module_cognitive_treelogic/PDF2Table.py
+module_cognitive_treelogic/WebScrapping.py
+module_cognitive_treelogic/__init__.py
+module_cognitive_treelogic.egg-info/PKG-INFO
+module_cognitive_treelogic.egg-info/SOURCES.txt
+module_cognitive_treelogic.egg-info/dependency_links.txt
+module_cognitive_treelogic.egg-info/requires.txt
+module_cognitive_treelogic.egg-info/top_level.txt
+test/__init__.py
+test/test_module_cognitive.py
