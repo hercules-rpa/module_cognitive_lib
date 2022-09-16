@@ -20,11 +20,6 @@ import hdbscan
 import nltk
 nltk.download('stopwords')
 
-
-
-le_category = LabelEncoder()
-le_email = LabelEncoder()
-le_tag = LabelEncoder()
 dataframe = None
 
 
