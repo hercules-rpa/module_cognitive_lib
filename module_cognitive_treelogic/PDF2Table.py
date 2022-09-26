@@ -29,7 +29,10 @@ class ProcessExtractTable():
 
 
     def execute(self):
-        files          = self.parameters['files']
+        """
+        Método que ejecuta el proceso de extraer de un PDF la tabla deseada.
+        """
+        files       = self.parameters['files']
         excel       = self.parameters['excel']
         list_df = []
         for f in files:
@@ -53,6 +56,12 @@ class ProcessExtractTable():
         
 
     def to_excel(self, name, dfs):
+        """
+        Método que convierte a excel el dataframe convertido del archivo PDF.
+
+        :param name str: Nombre con el que se va a identificar al fichero.
+        :param dfs Dataframe: Dataframe con el contenido de la tabla extraída del PDF.
+        """
         writer = pd.ExcelWriter(name+".xlsx", engine="xlsxwriter")
         workbook = writer.book
         startrow = 2
@@ -106,6 +115,12 @@ class ProcessExtractTable():
 
     #pasamos de: '1,2,5-7' a [1,2,5,6,7]
     def stringToRange(self, x):
+        """
+        Método para sacar la secuencia de una agrupación de números.
+
+        :param x str: Rango de números puesto como input.
+        :return array con secuencia completa.
+        """
         result = []
         for part in x.split(','):
             if '-' in part:
@@ -119,6 +134,14 @@ class ProcessExtractTable():
 
     #Obtenemos la página que nos interesa y la tratamos, por ejemplo. Si está girada la centramos.
     def get_preprocessing_page(self, pdf_file, name, page):
+        """
+        Método para procesar la página que nos interesa tratar en el PDF.
+
+        :param pdf_file str: Path del PDF a tratar.
+        :param name str: Nombre del fichero PDF.
+        :param page str: Páginas a tratar del PDF.
+        :return path del archivo PDF con las páginas seleccionadas.
+        """
         infile = PdfFileReader(pdf_file, strict=False)
         fpath = os.path.join(PATH_TEMP, f"{name}-{page}.pdf")
         froot, fext = os.path.splitext(fpath)
@@ -151,6 +174,11 @@ class ProcessExtractTable():
         return fpath
 
     def get_solution(self, pdf_file):
+        """
+        Método que busca si hay una solución en la tabla seleccionada.
+
+        :param pdf_file str: path del archivo PDF que se está tratando.
+        """
         camelot_tables_lattice_0 = camelot.read_pdf(pdf_file, flavor='lattice',line_tol= 2,joint_tol= 2, line_scale= 30,split_text= True, pages = 'all')
         camelot_tables_lattice_1 = camelot.read_pdf(pdf_file, flavor='lattice',line_tol= 1,joint_tol= 1, line_scale= 15,split_text= True, pages = 'all')
         camelot_tables_lattice_2 = camelot.read_pdf(pdf_file, flavor='lattice',split_text= True, pages = 'all')
@@ -175,6 +203,12 @@ class ProcessExtractTable():
         return best_solution_camelot
 
     def get_best_solution(self, table1, table2): 
+        """
+        Método para encontrar la mejor solución para mostrar en el documento.
+
+        :param table1 []: Array de df con el contenido de la tabla.
+        :param table2 []: Array de df con el contenido de la tabla
+        """
         best_solution = []
         #Nos quedamos con el que tenga mas columnas, menos filas y menos espacios en blanco
         if len(table1) - len(table2) == 0: #Comprobamos que tengamos las mismas tablas en cada uno
@@ -205,20 +239,45 @@ class ProcessExtractTable():
         return best_solution
 
     def send_mail(self, smtp_server, port, sender, receiver, subject, body, attached,username="",passw=""):
-            mime_subtype = 'plain'
-            with smtplib.SMTP_SSL(smtp_server, port) as server:
-                if port == 465:
-                    sender_email = username
-                    password = passw
-                    server.login(sender_email, password)
-                msg =  self.create_message(sender,receiver,subject,body, mime_subtype,attached)
-                try:
-                    server.sendmail(sender, receiver, msg.as_string())
-                except:
-                    return "Sending error: No se ha podido enviar el email a "+receiver+" desde "+sender+" con el contenido :"+ body+" y adjuntos : "+ ' '.join(attached if attached is not None else "[]")
-            return "Mensaje enviado correctamente a "+receiver+" desde "+sender+" con el contenido :"+ body+" y adjuntos : "+ ' '.join(attached if attached is not None else "[]")
+        """
+        Método para enviar por email el resultado.
+        
+        :param smtp_server str: Servidor SMTP.
+        :param port str: Puerto al que enviamos la petición.
+        :param sender str: Email del usuario que envía el correo.
+        :param receiver str: Email del usuario que reciviría el correo.
+        :param subject str: Asunto del email.
+        :param body str: Body del email que se envía.
+        :param attached str: path del archivo a adjuntar.
+        :param username str: usuario de la cuenta. Por defecto "".
+        :param passw str: contraseña de la cuenta. Por defecto "".
+        """
+        mime_subtype = 'plain'
+        with smtplib.SMTP_SSL(smtp_server, port) as server:
+            if port == 465:
+                sender_email = username
+                password = passw
+                server.login(sender_email, password)
+            msg =  self.create_message(sender,receiver,subject,body, mime_subtype,attached)
+            try:
+                server.sendmail(sender, receiver, msg.as_string())
+            except:
+                return "Sending error: No se ha podido enviar el email a "+receiver+" desde "+sender+" con el contenido :"+ body+" y adjuntos : "+ ' '.join(attached if attached is not None else "[]")
+        return "Mensaje enviado correctamente a "+receiver+" desde "+sender+" con el contenido :"+ body+" y adjuntos : "+ ' '.join(attached if attached is not None else "[]")
 
     def create_message(self,sender,receiver,subject,body,subtype, attached = None):
+        """
+        Método para crear un mensaje MIME.
+
+        :param sender str: Email del usuario que envía el correo.
+        :param receiver str: Email del usuario que reciviría el correo.
+        :param subject str: Asunto del email.
+        :param body str: Body del email que se envía.
+        :param subtype str: Tipo de mensaje MIME que se quiere construir.
+        :param attached str: path del archivo a adjuntar.
+
+        :return mensaje MIME construido para su envío.
+        """
         message = MIMEMultipart()
         message["From"] = sender
         message["To"] = receiver
@@ -232,6 +291,12 @@ class ProcessExtractTable():
 
 
     def attach_file(self,filename,message):
+        """
+        Método para insertar un archivo en el formato MIME.
+
+        :param filename str: path con el fichero que queremos adjuntar.
+        :param message str: mensaje MIME al que queremos adjuntar el fichero.
+        """
         self.update_log("Se ha adjuntado al correo el documento "+filename,True)
         with open(filename, "rb") as attachment:
             # Add file as application/octet-stream
@@ -247,38 +312,3 @@ class ProcessExtractTable():
         )
         # Add attachment to message and convert message to string
         message.attach(part)
-
-# parameters = {
-#     "files":[
-#         {
-#             "path": "readpdf/RESOLUCIÓN DE CONCESIÓN-PROYECTOS UMU.pdf",
-#             "page": "4",
-#             "image": False
-#         }
-        # ,
-        # {
-        #     "path": "readpdf/nuevas/PRE2020_TerceraRC_Art20_4_Firmada.pdf",
-        #     "page": "5",
-        #     "image": False
-        # }
-        # ,
-        # {
-        #     "path": "readpdf/CONCESIÓN_PREDOC2020_ Res 29 junio 2021 (WEB 29 junio) - MURCIA.pdf",
-        #     "page": 'all',
-        #     "image": False
-        # },
-        # {
-        #     "path": "readpdf/PRP - REDES DE INVESTIGACIÓN - UMU.pdf",
-        #     "page": None,
-        #     "image": False
-        # },
-        # {
-        #     "path": "readpdf/nuevas/Resolucion_Concesion_PREDOC2020_firmada.pdf",
-        #     "page": "5",
-        #     "image": False
-        # }    
-#     ],
-#     "excel": False
-# }
-# pr = ProcessExtractTable(parameters)
-# pr.execute()

@@ -56,6 +56,7 @@ class WebScrapping:
                     id = row['Código BDNS']
                     data[id] = row
             return json.dumps(data)
+            
     def obtain_data_bdns(self, num_bdns: int) -> dict:
         """
         Método para obtener una ampliación de la información de las convocatorias.

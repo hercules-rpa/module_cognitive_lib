@@ -24,6 +24,9 @@ dataframe = None
 
 
 def __load_data():
+    """
+    Método para cargar datos.
+    """
     sparql = SPARQLWrapper("http://edma.gnoss.com:8890/sparql",)
 
     #--- Nombre |email|descriptor/tag | num_apariciones ---
@@ -89,7 +92,9 @@ def __load_data():
     return df_processing, model
 
 def load_model():
-    '''Load model UMAP nad HDB CLUSTER'''
+    """
+    Load model UMAP nad HDB CLUSTER
+    """
     global dataframe, model
     df_processing, model = __load_data()
     #Volcamos la informacion del modelo para pasarle UMAP
@@ -128,43 +133,57 @@ def load_model():
     
 
 def get_all_cluster():
-    '''Return dataframe generated with clustering'''
+    """
+    Return dataframe generated with clustering
+    """
     if dataframe is None:
         return None
     return dataframe
 
 def get_all_categories():
-    '''Return all categories'''
+    """
+    Return all categories
+    """
     if dataframe is None:
         return None
     return list(set(dataframe['nombrecategoria'].to_list()))
 
 def get_all_tag():
-    '''Return all tag'''
+    """
+    Return all tag
+    """
     if dataframe is None:
         return None
     return list(set(dataframe['tag'].to_list()))
 
 def get_categories_interest_research(email: str):
-    '''Return all categories where research is in'''
+    """
+    Return all categories where research is in
+    """
     if dataframe is None:
         return None
     return list(set(dataframe.loc[dataframe.email == email]['nombrecategoria'].to_list()))
 
 def get_tags_interest_research(email: str):
-    '''Return all tags where research is in'''
+    """
+    Return all tags where research is in
+    """
     if dataframe is None:
         return None
     return list(set(dataframe.loc[dataframe.email == email]['tag'].to_list()))
 
 def get_research_clusters(email: str):
-    '''Return all cluster where research is in'''
+    """
+    Return all cluster where research is in
+    """
     if dataframe is None:
         return None
     return list(set(dataframe.loc[dataframe.email == email]['hdb_cluster'].to_list()))
 
 def get_research_relation(email: str):
-    '''Return all relation where research is in'''
+    """
+    Return all relation where research is in
+    """
     if dataframe is None:
         return None
     clusters = get_research_clusters(email)
@@ -173,21 +192,27 @@ def get_research_relation(email: str):
     return list(relation_set)
 
 def get_research_tag(tags: list):
-    '''Return all emails for tags'''
+    """
+    Return all emails for tags
+    """
     if dataframe is None:
         return None
     researchs_set = set(dataframe[dataframe['tag'].isin(tags)]['email'].to_list())
     return list(researchs_set)
 
 def get_research_category(categories: list):
-    '''Return all emails for categories'''
+    """
+    Return all emails for categories
+    """
     if dataframe is None:
         return None
     researchs_set = set(dataframe[dataframe['nombrecategoria'].isin(categories)]['email'].to_list())
     return list(researchs_set)
 
 def get_research_category_tag(tags: list, categories: list):
-    '''Return all emails for tags and categories'''
+    """
+    Return all emails for tags and categories
+    """
     df_tags = dataframe[dataframe['tag'].isin(tags)]
     df_categories = dataframe[dataframe['nombrecategoria'].isin(categories)]
     df = df_tags.merge(df_categories, how='inner',on='email')
