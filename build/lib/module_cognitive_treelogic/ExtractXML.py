@@ -3,121 +3,115 @@ import requests, os
 import xml.dom.minidom
 
 
-class InfoResultado:
-    def __init__(self, nodos_tratados, hijos):
-        self.nodos_tratados = nodos_tratados
-        self.hijos = hijos
+class InfoResult:
+    def __init__(self, treated_nodes, sons):
+        self.treated_nodes = treated_nodes
+        self.sons = sons
 
-class ProcessExtractXml():
+class ExtractXml():
     def __init__(self, parameters):
         self.parameters = parameters
 
-    def traer_documento(self, origen, destino):
-        if origen and destino:
-            file = requests.get(origen, allow_redirects=True)
+    def get_document(self, source, to):
+        """
+        Método que descarga un documento seleccionado y lo guarda en el destino.
+        :param source nombre origen del documento
+        :param to ruta donde almacenar el documento
+        :return int código de estado de la petición
+        """
+        if source and to:
+            requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':RC4-SHA'
+            file = requests.get(source, allow_redirects=True)
 
-            dirname = os.path.dirname(destino)
+            dirname = os.path.dirname(to)
             if not os.path.exists(dirname):
                 path = Path(dirname)
                 path.mkdir(parents=True)
 
-            if os.path.exists(destino):
-                os.remove(destino)
+            if os.path.exists(to):
+                os.remove(to)
             
-            with open(destino, 'wb') as f:
+            with open(to, 'wb') as f:
                 f.write(file.content)
 
             return file.status_code
         return 404
 
-    def obtener_hijos(self, nodos:dict, raiz, npadre) -> InfoResultado:
+    def get_childs(self, child:dict, origin, nparetn) -> InfoResult:
+        """
+        Método que obtiene los nodos hijos de un nodo raiz
+        :param child lista de nodos a obtener
+        :param origin nodo raiz
+        :param nparetn nombre del nodo padre
+        :return InfoResult entidad que almacena los datos obtenidos
+        """
         result = []
-        tratados = []
-        if nodos:
-            hijos = nodos[raiz]
-            tratados.append(raiz)
-            if hijos:
-                for hijo in hijos:
-                    nhijo = npadre.getElementsByTagName(hijo)
-                    if hijo in nodos:
-                        info = self.obtener_hijos(nodos, hijo, nhijo)
+        treated = []
+        if child:
+            sons = child[origin]
+            treated.append(origin)
+            if sons:
+                for son in sons:
+                    nson = nparetn.getElementsByTagName(son)
+                    if son in child:
+                        info = self.get_childs(child, son, nson)
                         result = result + info.hijos
-                        tratados.append(info.nodos_tratados)
+                        treated.append(info.treated_nodes)
                     else:
-                        result.append((nhijo, []))
+                        result.append((nson, []))
         
-        return InfoResultado(tratados, result)
+        return InfoResult(treated, result)
     
-    def obtener_diccionario(self, filename:str, rootname:str, atribname:str, childsname:list):
+    def get_dictionary(self, filename:str, rootname:str, atribname:str, childsname:list):
+        """
+        Método que crea un diccionario que almacena los nodos raiz y nodos hijos obtenidos
+        :param filename ruta del fichero XML a analizar
+        :param rootname nombre del nodo raiz
+        :param atribname nombre del atributo que se desea obtener del nodo
+        :param childsname lista de nombre de los nodos hijos a obtener
+        :return dict diccionario con los datos obtenidos
+        """
         result =  {}
         if rootname and childsname:
             mydoc = xml.dom.minidom.parse(filename)
-            collection = mydoc.documentElement  # -> Objeto raíz
+            collection = mydoc.documentElement
             if collection.localName != 'error':
-                nodos_padres = collection.getElementsByTagName(rootname)
-                for root in nodos_padres:
+                parent_nodes = collection.getElementsByTagName(rootname)
+                for root in parent_nodes:
                     childs = []
                     if childsname:
                         for child in childsname:
                             childs += root.getElementsByTagName(child)
                     
                     result.setdefault(root.attributes[atribname].value, childs)
-                    #result[root.attributes[atribname].value] = childs
         return result 
 
-    def obtener_nodos(self, nodos:dict, filename:str):
+    def get_nodes(self, nodes:dict, filename:str):
+        """
+        Método encargado de obtener nodos de un fichero XML
+        :param nodes diccionario de nodos
+        :param filename nombre de fichero XML
+        :return lista de nodos
+        """
         count = 0
         result = []
-        if nodos:
-            nodos_tratados = []
-            keys = nodos.keys()
+        if nodes:
+            treated_nodes = []
+            keys = nodes.keys()
             mydoc = xml.dom.minidom.parse(filename)
-            collection = mydoc.documentElement  # -> Objeto raíz
+            collection = mydoc.documentElement
             if collection.localName != 'error':
-                # Obtiene una lista de los objetos con la etiqueta padre
                 for key in keys:
-                    if key not in nodos_tratados:
-                        nodos_padres = collection.getElementsByTagName(key)
-                        if nodos_padres:
-                            for npadre in nodos_padres: 
+                    if key not in treated_nodes:
+                        parent_nodes = collection.getElementsByTagName(key)
+                        if parent_nodes:
+                            for nparent in parent_nodes: 
                                 count+=1
-                                infoHijos:InfoResultado = self.obtener_hijos(nodos, key, npadre)
-                                if infoHijos:
-                                    if infoHijos.nodos_tratados:
-                                        nodos_tratados = nodos_tratados + infoHijos.nodos_tratados
-                                    if infoHijos.hijos:
-                                        result.append((npadre, infoHijos.hijos))
+                                infoSons:InfoResult = self.get_childs(nodes, key, nparent)
+                                if infoSons:
+                                    if infoSons.treated_nodes:
+                                        treated_nodes = treated_nodes + infoSons.treated_nodes
+                                    if infoSons.sons:
+                                        result.append((nparent, infoSons.sons))
 
         return result                                               
-
-    def execute(self):
-        url:str = None
-        result = []
-        try:
-            url = self.parameters['url']           
-        except:
-            print('No se ha obtenido el parámetro url.')
-                
-        filename = self.parameters['filename']
-        if url:            
-            status_code = self.traer_documento(url, filename)
-
-            if status_code != 200:
-                print('No ha sido posible descargar el fichero xml.')
-
-        if os.path.getsize(filename) < 10:
-            print('ERROR: fichero xml erróneo o incompleto.')
-        else:
-            if 'nodos' in self.parameters:
-                result =  self.obtener_nodos(self.parameters['nodos'], filename)
-
-        #Solo eliminamos el fichero si no se ha pasado como parámetro la url, 
-        #ya que si se pasa la url el fichero lo hemos descargado nosotros.
-        delete_file = False
-        if url:
-            delete_file = True
-
-        if delete_file and os.path.exists(filename):
-            os.remove(filename)
-        
-        return result

@@ -29,7 +29,6 @@ def __load_data():
     """
     sparql = SPARQLWrapper("http://edma.gnoss.com:8890/sparql",)
 
-    #--- Nombre |email|descriptor/tag | num_apariciones ---
     sparql.setQuery("""
         
     select ?person ?tag ?nombrePersona ?email count(distinct ?doc) as ?num from <http://gnoss.com/document.owl> from <http://gnoss.com/person.owl> from <http://gnoss.com/taxonomy.owl> where {
@@ -73,7 +72,6 @@ def __load_data():
     df_processing = df_processing.drop('nombrepersona',1)
     df_processing = df_processing.drop('num',1)
     
-    #Limpiamos los tags y quitamos los stopwords
     df_processing['tag'] = df_processing['tag'].str.lower()
     df_processing['tag'] = df_processing['tag'].str.replace('[^a-zA-Z]',' ',regex=True)
     df_processing['tag'] = df_processing['tag'].apply(lambda x: ' '.join([word for word in x.split() if word not in stopwords.words('english') and word not in stopwords.words('spanish')]))
@@ -81,14 +79,11 @@ def __load_data():
     df_processing['nombrecategoria'] = df_processing['nombrecategoria'].str.replace('[^a-zA-Z]',' ',regex=True)
     df_processing['nombrecategoria'] = df_processing['nombrecategoria'].apply(lambda x: ' '.join([word for word in x.split() if word not in stopwords.words('english') and word not in stopwords.words('spanish')]))
     
-    #Combinamos Categoria y Tags para mayor vocabulario
     df_processing['combine'] = df_processing.values.tolist()
     df_processing['combine'] = df_processing[['tag','nombrecategoria']].values.tolist()
     dictionary_nlp = df_processing['combine'].tolist()
-    #Generamos el vocabulario y vectorizamos las palabras (NLP)
     model = Word2Vec(dictionary_nlp, min_count=3)
     
-    #print(model.wv['sdn'])
     return df_processing, model
 
 def load_model():
@@ -97,19 +92,15 @@ def load_model():
     """
     global dataframe, model
     df_processing, model = __load_data()
-    #Volcamos la informacion del modelo para pasarle UMAP
     data_dict = []
     for i in range(0, len(model.wv)): 
         data_dict.append(model.wv[model.wv.index_to_key[i]])
 
-    #Cargamos la libreria UMAP (machine learning)
     u = UMAP(n_neighbors=15, target_metric= 11)
     projection = u.fit_transform(data_dict)
     
-    #Añadimos al dataframe los vectores generados a traves de las palabras
     df_processing['vector_word'] = df_processing['tag'].apply(lambda x: projection[model.wv.key_to_index[x]] if x in model.wv else None) #En vez de coger los valores del model, cogemos los valores de UMAP, ya que ha reducido la dimensión
     df_processing['similarity'] = df_processing['tag'].apply(lambda x: model.wv.most_similar(x) if x in model.wv else None)
-    #Eliminamos las filas donde hay nulos
     df_processing = df_processing.dropna(axis=0)
     df_processing['similarity'] = df_processing['similarity'].apply(lambda x: [ projection[model.wv.key_to_index[word[0]]] for word in x])
 
@@ -125,8 +116,6 @@ def load_model():
     
     labels = clusterer.labels_
     hdb_cluster = pd.DataFrame(labels)
-    # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
-    # print('Estimated number of clusters: %d' % n_clusters_)
     df_cluster = pd.concat([df_processing, hdb_cluster], axis=1, join='inner')
     df_cluster.columns = ['tag','nombrecategoria', 'email', 'combine','vector_word', 'similarity', 'hdb_cluster']
     dataframe = df_cluster
@@ -188,7 +177,7 @@ def get_research_relation(email: str):
         return None
     clusters = get_research_clusters(email)
     relation_set = set(dataframe[dataframe['hdb_cluster'].isin(clusters)]['email'].to_list())
-    relation_set.remove(email) #eliminamos al investigador que usamos para buscar sus relaciones.
+    relation_set.remove(email)
     return list(relation_set)
 
 def get_research_tag(tags: list):

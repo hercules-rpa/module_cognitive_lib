@@ -27,11 +27,8 @@ class WebScrapping:
             page.click("input[name=\"titulo\"]")
             if len(args) == 1:
                 args = args[0].split()
-                #page.locator("select[name=\"tipoBusqPalab\"]").select_option("2")
-                #page.fill("input[name=\"titulo\"]", args[0])
             else:
                 args = ['investigación', 'i+d']
-                #page.fill("input[name=\"titulo\"]", "investigacion")
             page.click("input[name=\"fecDesde\"]")
             page.fill("input[name=\"fecDesde\"]", time.strftime('%d/%m/%Y', dD))
             page.click("input[name=\"fecHasta\"]")
@@ -56,6 +53,7 @@ class WebScrapping:
                     id = row['Código BDNS']
                     data[id] = row
             return json.dumps(data)
+            
     def obtain_data_bdns(self, num_bdns: int) -> dict:
         """
         Método para obtener una ampliación de la información de las convocatorias.

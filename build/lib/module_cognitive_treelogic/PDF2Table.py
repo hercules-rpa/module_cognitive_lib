@@ -11,14 +11,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from PyPDF2  import PdfFileReader
 
-#conda install -c conda-forge/label/gcc7 ghostscript
-
-
-#Posibles atributos
-    # - pagina/s
-    # - busqueda de un valor
-    # - busqueda de una cabecera
-    # - tipo, concensiones (contendrá 3 tablas?)
 
 PATH_TEMP = "/tmp/"
 PATH_FILES = ""
@@ -29,7 +21,10 @@ class ProcessExtractTable():
 
 
     def execute(self):
-        files          = self.parameters['files']
+        """
+        Método que ejecuta el proceso de extraer de un PDF la tabla deseada.
+        """
+        files       = self.parameters['files']
         excel       = self.parameters['excel']
         list_df = []
         for f in files:
@@ -41,18 +36,22 @@ class ProcessExtractTable():
                 page = 'all'
             file = self.get_preprocessing_page(path, name_file, page)
             dfs = self.get_solution(file)
-            list_df.append(dfs) #dfs es un array de df
+            list_df.append(dfs)
             if excel:
                 self.to_excel(name_file, dfs)
                 self.send_mail("smtp.um.es",25,"noreply@um.es",self.parameters['email'],"PDF2Table fichero XLSX.","A continuación se adjunta el fichero XLSX con la tabla pasada por parámetro.\n\nSaludos.",name_file+"xlsx")
-                #enviamos por correo los excel generados
-            #self.result = list_df
         return list_df
             
 
         
 
     def to_excel(self, name, dfs):
+        """
+        Método que convierte a excel el dataframe convertido del archivo PDF.
+
+        :param name str: Nombre con el que se va a identificar al fichero.
+        :param dfs Dataframe: Dataframe con el contenido de la tabla extraída del PDF.
+        """
         writer = pd.ExcelWriter(name+".xlsx", engine="xlsxwriter")
         workbook = writer.book
         startrow = 2
@@ -87,7 +86,6 @@ class ProcessExtractTable():
             fila = 0
             color_index = 0
             df = df.replace(np.nan, " ")
-            #PONEMOS EL FORMATO EN LOS DIFERENTES DATOS QUE TENEMOS, COLOR ALTERNATIVO PARA CADA FILA, ETC..
             for f in range(startrow+1, startrow+1+df.shape[0]):
                 columna = 0
                 for c in range(startcol+1, startcol+df.shape[1]+1):
@@ -96,16 +94,15 @@ class ProcessExtractTable():
                     columna = columna +1
                 fila = fila +1
                 color_index = (color_index+1)%2
-            
-            
-            #Eliminamos la columna indice, noexiste otra forma de hacerlo
-            # for c in range(startrow, startrow + df.shape[0]+10):
-            #     worksheet_result.write(c,0,' ')
-            # worksheet_result.set_column('A:I',20)
         writer.save()
 
-    #pasamos de: '1,2,5-7' a [1,2,5,6,7]
     def stringToRange(self, x):
+        """
+        Método para sacar la secuencia de una agrupación de números.
+
+        :param x str: Rango de números puesto como input.
+        :return array con secuencia completa.
+        """
         result = []
         for part in x.split(','):
             if '-' in part:
@@ -117,8 +114,15 @@ class ProcessExtractTable():
                 result.append(a)
         return result
 
-    #Obtenemos la página que nos interesa y la tratamos, por ejemplo. Si está girada la centramos.
     def get_preprocessing_page(self, pdf_file, name, page):
+        """
+        Método para procesar la página que nos interesa tratar en el PDF.
+
+        :param pdf_file str: Path del PDF a tratar.
+        :param name str: Nombre del fichero PDF.
+        :param page str: Páginas a tratar del PDF.
+        :return path del archivo PDF con las páginas seleccionadas.
+        """
         infile = PdfFileReader(pdf_file, strict=False)
         fpath = os.path.join(PATH_TEMP, f"{name}-{page}.pdf")
         froot, fext = os.path.splitext(fpath)
@@ -134,7 +138,6 @@ class ProcessExtractTable():
             with open(fpath, "wb+") as f:
                 outfile.write(f)
             layout, dim = camelot.utils.get_page_layout(fpath)
-            # fix rotated PDF
             chars = camelot.utils.get_text_objects(layout, ltype="char")
             horizontal_text = camelot.utils.get_text_objects(layout, ltype="horizontal_text")
             vertical_text = camelot.utils.get_text_objects(layout, ltype="vertical_text")
@@ -145,12 +148,16 @@ class ProcessExtractTable():
                     p.rotateClockwise(90)
                 elif rotation == "clockwise":
                     p.rotateCounterClockwise(90)
-                # outfile.addPage(p)
                 with open(fpath, "wb+") as f:
                     outfile.write(f)
         return fpath
 
     def get_solution(self, pdf_file):
+        """
+        Método que busca si hay una solución en la tabla seleccionada.
+
+        :param pdf_file str: path del archivo PDF que se está tratando.
+        """
         camelot_tables_lattice_0 = camelot.read_pdf(pdf_file, flavor='lattice',line_tol= 2,joint_tol= 2, line_scale= 30,split_text= True, pages = 'all')
         camelot_tables_lattice_1 = camelot.read_pdf(pdf_file, flavor='lattice',line_tol= 1,joint_tol= 1, line_scale= 15,split_text= True, pages = 'all')
         camelot_tables_lattice_2 = camelot.read_pdf(pdf_file, flavor='lattice',split_text= True, pages = 'all')
@@ -171,13 +178,17 @@ class ProcessExtractTable():
             best_solution_camelot  = df_list[0]
             for idx, df in enumerate(df_list):
                 best_solution_camelot = self.get_best_solution(best_solution_camelot, df)
-                # self.to_excel('camelot_tables_'+str(idx), df)
         return best_solution_camelot
 
     def get_best_solution(self, table1, table2): 
+        """
+        Método para encontrar la mejor solución para mostrar en el documento.
+
+        :param table1 []: Array de df con el contenido de la tabla.
+        :param table2 []: Array de df con el contenido de la tabla
+        """
         best_solution = []
-        #Nos quedamos con el que tenga mas columnas, menos filas y menos espacios en blanco
-        if len(table1) - len(table2) == 0: #Comprobamos que tengamos las mismas tablas en cada uno
+        if len(table1) - len(table2) == 0:
             for i in range(0,len(table1)):
                 df_1 = table1[i]
                 df_2 = table2[i]
@@ -186,17 +197,16 @@ class ProcessExtractTable():
                 df_1 = df_1.dropna(axis=1, thresh=len(df_1)/2, how='all')
                 df_2 = df_2.dropna(axis=1, thresh=len(df_1)/2, how='all')
                 df_1_aux = df_1.dropna(axis=0, how='any')
-                df_2_aux = df_2.dropna(axis=0, how='any') #si cualquier valor es nan elimina la fila
+                df_2_aux = df_2.dropna(axis=0, how='any') 
                 nan_df1 = df_1_aux.isna().sum().sum()
                 nan_df2 = df_2_aux.isna().sum().sum()
 
-                # print(df_1.shape, nan_df1, df_2.shape, nan_df2)
                 if df_1.shape[1] >= df_2.shape[1] and  df_1_aux.shape[0] >= df_2_aux.shape[0] and nan_df1 <= nan_df2:
                     best_solution.append(df_1)
                 else:
                     best_solution.append(df_2)
 
-        elif len(table1) - len(table2) < 0: #Hay mas tablas en stream, puede estar cogiendo texto que no deba
+        elif len(table1) - len(table2) < 0:
             best_solution = table1
 
         else:
@@ -205,25 +215,50 @@ class ProcessExtractTable():
         return best_solution
 
     def send_mail(self, smtp_server, port, sender, receiver, subject, body, attached,username="",passw=""):
-            mime_subtype = 'plain'
-            with smtplib.SMTP_SSL(smtp_server, port) as server:
-                if port == 465:
-                    sender_email = username
-                    password = passw
-                    server.login(sender_email, password)
-                msg =  self.create_message(sender,receiver,subject,body, mime_subtype,attached)
-                try:
-                    server.sendmail(sender, receiver, msg.as_string())
-                except:
-                    return "Sending error: No se ha podido enviar el email a "+receiver+" desde "+sender+" con el contenido :"+ body+" y adjuntos : "+ ' '.join(attached if attached is not None else "[]")
-            return "Mensaje enviado correctamente a "+receiver+" desde "+sender+" con el contenido :"+ body+" y adjuntos : "+ ' '.join(attached if attached is not None else "[]")
+        """
+        Método para enviar por email el resultado.
+        
+        :param smtp_server str: Servidor SMTP.
+        :param port str: Puerto al que enviamos la petición.
+        :param sender str: Email del usuario que envía el correo.
+        :param receiver str: Email del usuario que reciviría el correo.
+        :param subject str: Asunto del email.
+        :param body str: Body del email que se envía.
+        :param attached str: path del archivo a adjuntar.
+        :param username str: usuario de la cuenta. Por defecto "".
+        :param passw str: contraseña de la cuenta. Por defecto "".
+        """
+        mime_subtype = 'plain'
+        with smtplib.SMTP_SSL(smtp_server, port) as server:
+            if port == 465:
+                sender_email = username
+                password = passw
+                server.login(sender_email, password)
+            msg =  self.create_message(sender,receiver,subject,body, mime_subtype,attached)
+            try:
+                server.sendmail(sender, receiver, msg.as_string())
+            except:
+                return "Sending error: No se ha podido enviar el email a "+receiver+" desde "+sender+" con el contenido :"+ body+" y adjuntos : "+ ' '.join(attached if attached is not None else "[]")
+        return "Mensaje enviado correctamente a "+receiver+" desde "+sender+" con el contenido :"+ body+" y adjuntos : "+ ' '.join(attached if attached is not None else "[]")
 
     def create_message(self,sender,receiver,subject,body,subtype, attached = None):
+        """
+        Método para crear un mensaje MIME.
+
+        :param sender str: Email del usuario que envía el correo.
+        :param receiver str: Email del usuario que reciviría el correo.
+        :param subject str: Asunto del email.
+        :param body str: Body del email que se envía.
+        :param subtype str: Tipo de mensaje MIME que se quiere construir.
+        :param attached str: path del archivo a adjuntar.
+
+        :return mensaje MIME construido para su envío.
+        """
         message = MIMEMultipart()
         message["From"] = sender
         message["To"] = receiver
         message["Subject"] = subject
-        message["Bcc"] = receiver # Recommended for mass emails
+        message["Bcc"] = receiver 
         message.attach(MIMEText(body, subtype))
         if (attached is not None):
             for att in attached:
@@ -232,53 +267,19 @@ class ProcessExtractTable():
 
 
     def attach_file(self,filename,message):
+        """
+        Método para insertar un archivo en el formato MIME.
+
+        :param filename str: path con el fichero que queremos adjuntar.
+        :param message str: mensaje MIME al que queremos adjuntar el fichero.
+        """
         self.update_log("Se ha adjuntado al correo el documento "+filename,True)
         with open(filename, "rb") as attachment:
-            # Add file as application/octet-stream
-            # Email client can usually download this automatically as attachment
             part = MIMEBase("application", "octet-stream")
-            part.set_payload(attachment.read())
-        # Encode file in ASCII characters to send by email    
+            part.set_payload(attachment.read())   
         encoders.encode_base64(part)
-        # Add header as key/value pair to attachment part
         part.add_header(
             "Content-Disposition",
             f"attachment; filename= {filename}",
         )
-        # Add attachment to message and convert message to string
         message.attach(part)
-
-# parameters = {
-#     "files":[
-#         {
-#             "path": "readpdf/RESOLUCIÓN DE CONCESIÓN-PROYECTOS UMU.pdf",
-#             "page": "4",
-#             "image": False
-#         }
-        # ,
-        # {
-        #     "path": "readpdf/nuevas/PRE2020_TerceraRC_Art20_4_Firmada.pdf",
-        #     "page": "5",
-        #     "image": False
-        # }
-        # ,
-        # {
-        #     "path": "readpdf/CONCESIÓN_PREDOC2020_ Res 29 junio 2021 (WEB 29 junio) - MURCIA.pdf",
-        #     "page": 'all',
-        #     "image": False
-        # },
-        # {
-        #     "path": "readpdf/PRP - REDES DE INVESTIGACIÓN - UMU.pdf",
-        #     "page": None,
-        #     "image": False
-        # },
-        # {
-        #     "path": "readpdf/nuevas/Resolucion_Concesion_PREDOC2020_firmada.pdf",
-        #     "page": "5",
-        #     "image": False
-        # }    
-#     ],
-#     "excel": False
-# }
-# pr = ProcessExtractTable(parameters)
-# pr.execute()

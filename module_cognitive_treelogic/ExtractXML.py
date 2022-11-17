@@ -8,7 +8,7 @@ class InfoResult:
         self.treated_nodes = treated_nodes
         self.sons = sons
 
-class ProcessExtractXml():
+class ExtractXml():
     def __init__(self, parameters):
         self.parameters = parameters
 
@@ -20,6 +20,7 @@ class ProcessExtractXml():
         :return int código de estado de la petición
         """
         if source and to:
+            requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':RC4-SHA'
             file = requests.get(source, allow_redirects=True)
 
             dirname = os.path.dirname(to)
@@ -55,7 +56,7 @@ class ProcessExtractXml():
                     if son in child:
                         info = self.get_childs(child, son, nson)
                         result = result + info.hijos
-                        treated.append(info.nodes_treated)
+                        treated.append(info.treated_nodes)
                     else:
                         result.append((nson, []))
         
@@ -73,7 +74,7 @@ class ProcessExtractXml():
         result =  {}
         if rootname and childsname:
             mydoc = xml.dom.minidom.parse(filename)
-            collection = mydoc.documentElement  # -> Objeto raíz
+            collection = mydoc.documentElement
             if collection.localName != 'error':
                 parent_nodes = collection.getElementsByTagName(rootname)
                 for root in parent_nodes:
@@ -83,7 +84,6 @@ class ProcessExtractXml():
                             childs += root.getElementsByTagName(child)
                     
                     result.setdefault(root.attributes[atribname].value, childs)
-                    #result[root.attributes[atribname].value] = childs
         return result 
 
     def get_nodes(self, nodes:dict, filename:str):
@@ -99,9 +99,8 @@ class ProcessExtractXml():
             treated_nodes = []
             keys = nodes.keys()
             mydoc = xml.dom.minidom.parse(filename)
-            collection = mydoc.documentElement  # -> Objeto raíz
+            collection = mydoc.documentElement
             if collection.localName != 'error':
-                # Obtiene una lista de los objetos con la etiqueta padre
                 for key in keys:
                     if key not in treated_nodes:
                         parent_nodes = collection.getElementsByTagName(key)

@@ -11,14 +11,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from PyPDF2  import PdfFileReader
 
-#conda install -c conda-forge/label/gcc7 ghostscript
-
-
-#Posibles atributos
-    # - pagina/s
-    # - busqueda de un valor
-    # - busqueda de una cabecera
-    # - tipo, concensiones (contendrá 3 tablas?)
 
 PATH_TEMP = "/tmp/"
 PATH_FILES = ""
@@ -44,12 +36,10 @@ class ProcessExtractTable():
                 page = 'all'
             file = self.get_preprocessing_page(path, name_file, page)
             dfs = self.get_solution(file)
-            list_df.append(dfs) #dfs es un array de df
+            list_df.append(dfs)
             if excel:
                 self.to_excel(name_file, dfs)
                 self.send_mail("smtp.um.es",25,"noreply@um.es",self.parameters['email'],"PDF2Table fichero XLSX.","A continuación se adjunta el fichero XLSX con la tabla pasada por parámetro.\n\nSaludos.",name_file+"xlsx")
-                #enviamos por correo los excel generados
-            #self.result = list_df
         return list_df
             
 
@@ -96,7 +86,6 @@ class ProcessExtractTable():
             fila = 0
             color_index = 0
             df = df.replace(np.nan, " ")
-            #PONEMOS EL FORMATO EN LOS DIFERENTES DATOS QUE TENEMOS, COLOR ALTERNATIVO PARA CADA FILA, ETC..
             for f in range(startrow+1, startrow+1+df.shape[0]):
                 columna = 0
                 for c in range(startcol+1, startcol+df.shape[1]+1):
@@ -105,15 +94,8 @@ class ProcessExtractTable():
                     columna = columna +1
                 fila = fila +1
                 color_index = (color_index+1)%2
-            
-            
-            #Eliminamos la columna indice, noexiste otra forma de hacerlo
-            # for c in range(startrow, startrow + df.shape[0]+10):
-            #     worksheet_result.write(c,0,' ')
-            # worksheet_result.set_column('A:I',20)
         writer.save()
 
-    #pasamos de: '1,2,5-7' a [1,2,5,6,7]
     def stringToRange(self, x):
         """
         Método para sacar la secuencia de una agrupación de números.
@@ -132,7 +114,6 @@ class ProcessExtractTable():
                 result.append(a)
         return result
 
-    #Obtenemos la página que nos interesa y la tratamos, por ejemplo. Si está girada la centramos.
     def get_preprocessing_page(self, pdf_file, name, page):
         """
         Método para procesar la página que nos interesa tratar en el PDF.
@@ -157,7 +138,6 @@ class ProcessExtractTable():
             with open(fpath, "wb+") as f:
                 outfile.write(f)
             layout, dim = camelot.utils.get_page_layout(fpath)
-            # fix rotated PDF
             chars = camelot.utils.get_text_objects(layout, ltype="char")
             horizontal_text = camelot.utils.get_text_objects(layout, ltype="horizontal_text")
             vertical_text = camelot.utils.get_text_objects(layout, ltype="vertical_text")
@@ -168,7 +148,6 @@ class ProcessExtractTable():
                     p.rotateClockwise(90)
                 elif rotation == "clockwise":
                     p.rotateCounterClockwise(90)
-                # outfile.addPage(p)
                 with open(fpath, "wb+") as f:
                     outfile.write(f)
         return fpath
@@ -199,7 +178,6 @@ class ProcessExtractTable():
             best_solution_camelot  = df_list[0]
             for idx, df in enumerate(df_list):
                 best_solution_camelot = self.get_best_solution(best_solution_camelot, df)
-                # self.to_excel('camelot_tables_'+str(idx), df)
         return best_solution_camelot
 
     def get_best_solution(self, table1, table2): 
@@ -210,8 +188,7 @@ class ProcessExtractTable():
         :param table2 []: Array de df con el contenido de la tabla
         """
         best_solution = []
-        #Nos quedamos con el que tenga mas columnas, menos filas y menos espacios en blanco
-        if len(table1) - len(table2) == 0: #Comprobamos que tengamos las mismas tablas en cada uno
+        if len(table1) - len(table2) == 0:
             for i in range(0,len(table1)):
                 df_1 = table1[i]
                 df_2 = table2[i]
@@ -220,17 +197,16 @@ class ProcessExtractTable():
                 df_1 = df_1.dropna(axis=1, thresh=len(df_1)/2, how='all')
                 df_2 = df_2.dropna(axis=1, thresh=len(df_1)/2, how='all')
                 df_1_aux = df_1.dropna(axis=0, how='any')
-                df_2_aux = df_2.dropna(axis=0, how='any') #si cualquier valor es nan elimina la fila
+                df_2_aux = df_2.dropna(axis=0, how='any') 
                 nan_df1 = df_1_aux.isna().sum().sum()
                 nan_df2 = df_2_aux.isna().sum().sum()
 
-                # print(df_1.shape, nan_df1, df_2.shape, nan_df2)
                 if df_1.shape[1] >= df_2.shape[1] and  df_1_aux.shape[0] >= df_2_aux.shape[0] and nan_df1 <= nan_df2:
                     best_solution.append(df_1)
                 else:
                     best_solution.append(df_2)
 
-        elif len(table1) - len(table2) < 0: #Hay mas tablas en stream, puede estar cogiendo texto que no deba
+        elif len(table1) - len(table2) < 0:
             best_solution = table1
 
         else:
@@ -282,7 +258,7 @@ class ProcessExtractTable():
         message["From"] = sender
         message["To"] = receiver
         message["Subject"] = subject
-        message["Bcc"] = receiver # Recommended for mass emails
+        message["Bcc"] = receiver 
         message.attach(MIMEText(body, subtype))
         if (attached is not None):
             for att in attached:
@@ -299,16 +275,11 @@ class ProcessExtractTable():
         """
         self.update_log("Se ha adjuntado al correo el documento "+filename,True)
         with open(filename, "rb") as attachment:
-            # Add file as application/octet-stream
-            # Email client can usually download this automatically as attachment
             part = MIMEBase("application", "octet-stream")
-            part.set_payload(attachment.read())
-        # Encode file in ASCII characters to send by email    
+            part.set_payload(attachment.read())   
         encoders.encode_base64(part)
-        # Add header as key/value pair to attachment part
         part.add_header(
             "Content-Disposition",
             f"attachment; filename= {filename}",
         )
-        # Add attachment to message and convert message to string
         message.attach(part)
