@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='module_cognitive_treelogic',
+    name='module-cognitive-treelogic',
     packages=find_packages(),
     version='0.1.0',
     description='Module cognitive for Hercules project',
